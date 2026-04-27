@@ -1,0 +1,185 @@
+package expense 
+import "go-tailwind-test/client/layout"
+
+
+
+
+templ PageDivide(header PageHeader) {
+
+    <div class="page-divide-top-section">
+        <h1 style="margin-bottom: 0;" >{ header.Title }</h1>
+        
+    </div>
+    
+    <hr class="page-divide" style="margin-top: 0;"/>
+
+    <style>
+        .page-divide-top-section{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+    
+
+
+        
+    </style>
+
+
+
+}
+
+templ ExpensePage(props ExpensePageProps) {
+    @layout.Base() {
+        <script src="/public/javascript/alpine.min.js" defer></script>
+        <div x-data="{ openPanel: null }" class="p-6 space-y-6">
+
+        <!-- Header -->
+        <div class="flex flex-row gap-3 w-full">
+            <img src="/public/logo.svg" alt="VIPA Logo" class="w-24 h-24 mb-4">
+            <h1 class="text-2xl font-bold">Expense Manager</h1>
+        </div>
+
+        <!-- Action Buttons -->
+        @ActionButtonBar(ExpensePageProps{ ViewType: props.ViewType })
+        @ExpenseTable(ExpenseTableProps{Model: props.TableData})
+        @InputFormPanel()    
+    </div>
+    }
+}
+
+templ InputFormPanel() {
+    <!-- Drawer -->
+    <div
+        x-show="openPanel"
+        x-transition
+        @click.outside="openPanel = null"
+        class="fixed inset-x-0 top-0 bg-white shadow-lg border-b p-6 z-50"
+    >
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold capitalize" x-text="openPanel"></h2>
+            <button @click="openPanel = null">✕</button>
+        </div>
+
+        <!-- ✅ Panels INSIDE -->
+        <div x-show="openPanel === 'expense'">
+            @ExpenseForm(ExpenseFormProps{ ViewType: ViewTypeClient })
+        </div>
+
+        <div x-show="openPanel === 'vendor'">
+            <p>Vendor form goes here</p>
+        </div>
+
+        <div x-show="openPanel === 'category'">
+            <p>Category form goes here</p>
+        </div>
+
+        <div x-show="openPanel === 'client'">
+            @ExpenseForm(ExpenseFormProps{ ViewType: ViewTypeClient })
+        </div>
+
+        <div x-show="openPanel === 'project'">
+            <p>Project form goes here</p>
+        </div>
+    </div>
+}
+
+type ActionButton struct {
+    Label string
+    Panel string
+    IsPrimary bool
+}
+
+func GetActionButtons(view ExpenseViewType) []ActionButton {
+    switch view {
+
+    case ViewTypeExpense:
+        return []ActionButton{
+            {Label: "Add Expense +", Panel: "expense", IsPrimary: true},
+            {Label: "Show Vendors", Panel: "vendor"},
+            {Label: "Show Projects", Panel: "project"},
+            {Label: "Show Categories", Panel: "category"},
+            {Label: "Show Clients", Panel: "client"},
+        }
+
+    case ViewTypeVendor:
+        return []ActionButton{
+            {Label: "Add Vendor +", Panel: "vendor", IsPrimary: true},
+            {Label: "Show Expenses", Panel: "expense"},
+            {Label: "Show Categories", Panel: "category"},
+            {Label: "Show Clients", Panel: "client"},
+            {Label: "Show Projects", Panel: "project"},
+        }
+
+    
+
+    case ViewTypeProject:
+        return []ActionButton{
+            {Label: "Add Project +", Panel: "project", IsPrimary: true},
+            {Label: "Show Expenses", Panel: "expense"},
+            {Label: "Show Vendors", Panel: "vendor"},
+            {Label: "Show Categories", Panel: "category"},
+            {Label: "Show Clients", Panel: "client"},
+        }
+    
+    case ViewTypeCategory:
+        return []ActionButton{
+            {Label: "Add Category +", Panel: "category", IsPrimary: true},
+            {Label: "Show Expenses", Panel: "expense"},
+            {Label: "Show Vendors", Panel: "vendor"},
+            {Label: "Show Projects", Panel: "project"},
+            {Label: "Show Clients", Panel: "client"},
+        }
+    
+    case ViewTypeClient:
+        return []ActionButton{
+            {Label: "Add Client +", Panel: "client", IsPrimary: true},
+            {Label: "Show Expenses", Panel: "expense"},
+            {Label: "Show Vendors", Panel: "vendor"},
+            {Label: "Show Projects", Panel: "project"},
+            {Label: "Show Categories", Panel: "category"},
+        }
+    
+    
+
+    }
+    return nil
+}
+
+templ ActionButtonBar(props ExpensePageProps) {
+    <div class="flex items-center justify-between">
+
+        <!-- LEFT: Primary -->
+        <div>
+            for _, btn := range GetActionButtons(props.ViewType) {
+                if btn.IsPrimary {
+                    <button
+                        @click={ "openPanel = '" + btn.Panel + "'" }
+                        class="btn btn-primary"
+                    >
+                        { btn.Label }
+                    </button>
+                }
+            }
+        </div>
+
+        <!-- RIGHT: Secondary -->
+        <div class="flex gap-3">
+            for _, btn := range GetActionButtons(props.ViewType) {
+                if !btn.IsPrimary {
+                <button
+                    hx-get={ "/expense/" + btn.Panel }
+                    hx-target="body"
+                    hx-push-url="true"
+                    class="btn btn-secondary"
+                >
+                    { btn.Label }
+                </button>
+                }
+            }
+        </div>
+
+    </div>
+}

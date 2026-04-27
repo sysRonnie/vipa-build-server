@@ -1,0 +1,37 @@
+package page
+
+import (
+    "go-tailwind-test/client/layout"
+)
+
+templ LandingPage() {
+    @layout.Base() {
+
+        <div class="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
+
+            <!-- Title -->
+            <img src="/public/logo.svg" alt="VIPA Logo" class="w-75 h-75 mb-6">
+
+            <!-- Button stack (VStack equivalent) -->
+            <div class="flex flex-col gap-4 w-full max-w-sm">
+
+                <a href="/expense"
+                   class="w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg shadow">
+                    Track Expenses
+                </a>
+
+                <a href="/datahub"
+                   class="w-full text-center bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 px-4 rounded-lg shadow">
+                    DataHub
+                </a>
+
+                <a href="/reports"
+                   class="w-full text-center bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow">
+                    Reports
+                </a>
+
+            </div>
+
+        </div>
+    }
+}

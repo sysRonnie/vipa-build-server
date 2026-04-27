@@ -1,0 +1,13 @@
+package page
+
+import "go-tailwind-test/client/layout"
+
+templ HomePage() {
+    @layout.Base(){
+        <div>
+            <button class="bg-red p-2 text-white" hx-get="/" hx-target="body">Go To Page 1</button>
+          
+        </div>
+    }
+   
+}

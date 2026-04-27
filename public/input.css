@@ -1,0 +1,29 @@
+@import "tailwindcss";
+.btn {
+    @apply inline-flex items-center justify-center gap-2 
+           font-medium py-2 px-4 rounded-md 
+           transition duration-150 ease-in-out
+           focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-primary {
+    @apply bg-blue-600 text-white 
+           hover:bg-blue-700 
+           focus:ring-blue-500
+           shadow-sm;
+}
+
+.btn-secondary {
+    @apply bg-white text-gray-700 
+           border border-gray-300 
+           hover:bg-gray-50 
+           focus:ring-gray-400
+           shadow-sm;
+}
+
+.btn-tertiary {
+    @apply bg-transparent text-gray-600 
+           hover:bg-gray-100 
+           hover:text-gray-900
+           focus:ring-gray-300;
+}

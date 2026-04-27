@@ -1,0 +1,60 @@
+package expense 
+
+import "fmt"
+
+
+type ExpenseInputProps struct {
+    Id int 
+    ViewType ExpenseViewType
+}
+
+func NormalizeFormName(index int, field string) string {
+    return fmt.Sprintf("clients[%d].%s", index, field)
+}
+
+templ ExpenseInputList(props ExpenseInputProps) {
+  
+            <!-- Header row -->
+            <div class="grid grid-cols-4 gap-2 text-xs font-semibold text-gray-500 px-1">
+                <div>Name</div>
+                <div>Email</div>
+                <div>Phone</div>
+                <div>Address</div>
+            </div>
+
+            <!-- Input row -->
+            <div class="grid grid-cols-4 gap-2">
+                <input
+                    type="text"
+                    name={ NormalizeFormName(props.Id, "name") }
+                    value=""
+                    placeholder="Name"
+                    class="border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+
+                <input
+                    type="email"
+                    name={ NormalizeFormName(props.Id, "email") }
+                    value=""
+                    placeholder="Email"
+                    class="border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+
+                <input
+                    type="text"
+                    name={ NormalizeFormName(props.Id, "phone") } 
+                    value=""
+                    placeholder="Phone"
+                    class="border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+
+                <input
+                    type="text"
+                    name={ NormalizeFormName(props.Id, "address") }
+                    value=""
+                    placeholder="Address"
+                    class="border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input type="hidden" name="viewType" value={ string(props.ViewType) }>
+            </div>
+}
