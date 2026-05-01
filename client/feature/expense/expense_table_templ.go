@@ -22,6 +22,7 @@ type ExpenseTableProps struct {
 	Model ExpenseTableModel
 }
 
+// Column{Key: "Name",Label: "Name",}
 func ExpenseTable(props ExpenseTableProps) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -44,7 +45,7 @@ func ExpenseTable(props ExpenseTableProps) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		if len(props.Model.Rows) > 0 {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"border rounded-lg p-4\"><div x-data=\"{ showActions: true }\" class=\"w-full\"><div class=\"flex justify-end mb-3\"><button @click=\"showActions = !showActions\" class=\"inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium \n                border rounded-md shadow-sm transition\" :class=\"showActions \n                ? &#39;bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100&#39; \n                : &#39;bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100&#39;\"><img :src=\"showActions \n                    ? &#39;/public/svg/eye_closed_blue.svg&#39; \n                    : &#39;/public/svg/eye_open_grey.svg&#39;\" class=\"w-4 h-4 cursor-pointer\"> <span x-text=\"showActions ? &#39;Hide Actions&#39; : &#39;Show Actions&#39;\"></span></button></div><!-- SCROLL CONTAINER --><div class=\"max-h-[500px] overflow-y-auto overflow-x-auto\"><table class=\"min-w-full divide-y divide-gray-200\"><!-- HEADER --><thead class=\"bg-gray-50 sticky top-0 z-10\"><tr>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"border rounded-lg p-4\"><div x-data=\"{ showActions: false }\" class=\"w-full\"><div id=\"modal-root\"></div><div class=\"flex justify-end mb-3\"><button @click=\"showActions = !showActions\" class=\"inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium \n                border rounded-md shadow-sm transition\" :class=\"showActions \n                ? &#39;bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100&#39; \n                : &#39;bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100&#39;\"><img :src=\"showActions \n                    ? &#39;/public/svg/eye_closed_blue.svg&#39; \n                    : &#39;/public/svg/eye_open_grey.svg&#39;\" class=\"w-4 h-4 cursor-pointer\"> <span x-text=\"showActions ? &#39;Hide Actions&#39; : &#39;Show Actions&#39;\"></span></button></div><!-- SCROLL CONTAINER --><div class=\"max-h-[500px] overflow-y-auto overflow-x-auto\"><table class=\"min-w-full divide-y divide-gray-200\"><!-- HEADER --><thead class=\"bg-gray-50 sticky top-0 z-10\"><tr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -56,7 +57,7 @@ func ExpenseTable(props ExpenseTableProps) templ.Component {
 				var templ_7745c5c3_Var2 string
 				templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(column.Label)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/feature/expense/expense_table.templ`, Line: 51, Col: 46}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/feature/expense/expense_table.templ`, Line: 57, Col: 46}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 				if templ_7745c5c3_Err != nil {
@@ -84,7 +85,7 @@ func ExpenseTable(props ExpenseTableProps) templ.Component {
 					var templ_7745c5c3_Var3 string
 					templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(row[column.Key])
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/feature/expense/expense_table.templ`, Line: 70, Col: 53}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/feature/expense/expense_table.templ`, Line: 76, Col: 53}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 					if templ_7745c5c3_Err != nil {
@@ -95,7 +96,20 @@ func ExpenseTable(props ExpenseTableProps) templ.Component {
 						return templ_7745c5c3_Err
 					}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<td x-show=\"showActions\" class=\"px-6 py-4 whitespace-nowrap text-sm flex gap-3\"><button class=\"flex items-center gap-1 text-blue-600 hover:text-blue-800\"><img src=\"/public/svg/edit_blue.svg\" class=\"w-5 h-5\"> <span class=\"text-xs\">Edit</span></button> <button class=\"flex items-center gap-1 text-red-600 hover:text-red-800\"><img src=\"/public/svg/delete_red.svg\" class=\"w-5 h-5\"> <span class=\"text-xs\">Delete</span></button></td></tr>")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<td x-show=\"showActions\" class=\"px-6 py-4 whitespace-nowrap text-sm flex gap-3\"><button hx-get=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var4 string
+				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("/expense/edit-record/" + row["id"])
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/feature/expense/expense_table.templ`, Line: 85, Col: 79}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#modal-root\" hx-swap=\"innerHTML\" class=\"flex items-center gap-1 text-blue-600 hover:text-blue-800\"><img src=\"/public/svg/edit_blue.svg\" class=\"w-5 h-5\"> <span class=\"text-xs\">Edit</span></button> <button class=\"flex items-center gap-1 text-red-600 hover:text-red-800\"><img src=\"/public/svg/delete_red.svg\" class=\"w-5 h-5\"> <span class=\"text-xs\">Delete</span></button></td></tr>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

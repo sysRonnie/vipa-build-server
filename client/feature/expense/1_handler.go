@@ -2,6 +2,7 @@ package expense
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
@@ -23,6 +24,35 @@ func (h *Handler) RegisterExpenseRoutes(g *echo.Group) {
 	g.GET("/expense/:viewType", h.ShowExpensePage)
 	g.GET("/expense", h.ShowExpensePage)
 	g.POST("/expense/insert-new-record", h.HandleInsertNewRecord)
+	g.GET("/expense/edit-record/:rowId", h.HandleEditRecord)
+	g.GET("/expense/update-record/:rowId", h.HandleEditRecord)
+}
+
+func (h *Handler) HandleUpdateRecord(c echo.Context) error {
+	param, err := strconv.Atoi(c.Param("rowId"))
+	if err != nil {
+		return c.JSON(400, "invalid rowId")
+	}
+
+	log.Println("Updating Recording Hit")
+	return nil
+
+
+
+}
+
+func (h *Handler) HandleEditRecord(c echo.Context) error {
+	log.Println("HandleEditRecord")
+	param, err := strconv.Atoi(c.Param("rowId"))
+	if err != nil {
+		return c.JSON(400, "invalid rowId")
+	}
+
+	row, err := h.service.FetchExpenseTableRow(ViewTypeClient, param)
+	if err != nil {
+		return c.JSON(400, err.Error())
+	}
+	return render(c, EditClientModal(row))
 }
 
 func (h *Handler) HandleInsertNewRecord(c echo.Context) error {
@@ -61,14 +91,21 @@ func (h *Handler) ShowExpensePage(c echo.Context) error {
 
     viewType, ok := ParseViewType(param)
     if !ok {
-        viewType = ViewTypeExpense
+        viewType = ViewTypeClient
     }
 
-    // ✅ now you can use your service
-    data := ExpenseTableModel{} // replace later with real data
+	viewType = ViewTypeClient
+
+	
+	tableModel, err := h.service.ProcessExpenseTablePayload(viewType)
+	if err != nil {
+		return c.JSON(400, err.Error())
+	}
+
+	
 
     props := ExpensePageProps{
-        TableData: data,
+        TableData: tableModel,
         ViewType:  viewType,
     }
 

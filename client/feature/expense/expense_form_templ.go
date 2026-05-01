@@ -40,6 +40,7 @@ type ExpenseFormProps struct {
 }
 
 type ExpenseFormModelClient struct {
+	Id      int
 	Name    string
 	Email   string
 	Phone   string

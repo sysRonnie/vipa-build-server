@@ -3,6 +3,7 @@ package expense
 import (
 	"fmt"
 	"log"
+	"strconv"
 )
 
 type Service struct {
@@ -15,6 +16,49 @@ func NewService(store ExpenseStore) *Service {
 
 type ExpenseService interface {
 	ProcessNewRecordInsertion(viewType ExpenseViewType, data map[string][]string) error
+	ProcessExpenseTablePayload(viewType ExpenseViewType) (ExpenseTableModel, error)
+	FetchExpenseTableRow(viewType ExpenseViewType, rowId int) (map[string]string, error)
+	Update
+}
+
+func (s *Service) FetchExpenseTableRow(viewType ExpenseViewType, rowId int) (map[string]string, error) {
+	log.Println("FetchExpenseTableRow is working now")
+
+	switch viewType {
+	case ViewTypeClient:
+		listClients, err := s.store.QueryMasterClientListRowById(rowId)
+		if err != nil {
+			return nil, err
+		}
+		row := map[string]string{
+			"id":      strconv.Itoa(listClients.Id),
+			"name":    listClients.Name,
+			"email":   listClients.Email,
+			"phone":   listClients.Phone,
+			"address": listClients.Address,
+		}
+		
+
+		return row, nil
+	default:
+		return nil, fmt.Errorf("unknown viewType: %s", viewType)
+	}
+}
+
+func (s *Service) ProcessExpenseTablePayload(viewType ExpenseViewType) (ExpenseTableModel, error) {
+	log.Println("ProcessExpenseTable is working now")
+
+	switch viewType {
+	case ViewTypeClient:
+		listClients, err := s.store.QueryMasterClientList()
+		if err != nil {
+			return ExpenseTableModel{}, err
+		}
+		tableModel := BuildExpenseTableModel(listClients)
+		return tableModel, nil
+	default:
+		return ExpenseTableModel{}, fmt.Errorf("unknown viewType: %s", viewType)
+	}
 }
 
 func (s *Service) ProcessNewRecordInsertion(
@@ -22,8 +66,7 @@ func (s *Service) ProcessNewRecordInsertion(
     data map[string][]string,
 ) error {
 
-    log.Println("ProcessNewRecordInsertion", viewType)
-    log.Println("raw data:", data)
+  
 
     switch viewType {
 
@@ -31,6 +74,9 @@ func (s *Service) ProcessNewRecordInsertion(
         log.Println("client branch")
 
         clients := parseClients(data)
+
+		log.Println("client records")
+		log.Println(clients)
 
         return s.store.InsertNewRecordClient(clients)
 

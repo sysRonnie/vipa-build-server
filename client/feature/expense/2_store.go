@@ -16,6 +16,79 @@ func NewExpenseStore(db *sql.DB) *Store {
 
 type ExpenseStore interface {
 	InsertNewRecordClient(data []ExpenseFormModelClient) error
+	QueryMasterClientList() ([]ExpenseFormModelClient, error)
+	QueryMasterClientListRowById(id int) (ExpenseFormModelClient, error)
+}
+
+func (s *Store) QueryMasterClientListRowById(id int) (ExpenseFormModelClient, error) {
+	row := s.db.QueryRow(`
+		SELECT 
+			id
+			,client_name
+			,client_email
+			,client_phone
+			,client_address
+		FROM master_client_list
+		WHERE id = $1
+		AND flag_is_deleted = false
+	`, id)
+
+	var client ExpenseFormModelClient
+	err := row.Scan(
+		&client.Id,
+		&client.Name,
+		&client.Email,
+		&client.Phone,
+		&client.Address,
+	)
+	if err != nil {
+		return ExpenseFormModelClient{}, err
+	}
+
+	return client, nil
+}
+
+func (s *Store) QueryMasterClientList() ([]ExpenseFormModelClient, error) {
+	
+	rows,err := s.db.Query(` 
+		SELECT 
+			id
+			,client_name
+			,client_email
+			,client_phone
+			,client_address
+		FROM master_client_list
+		WHERE 1=1
+		AND flag_is_deleted = false
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// var listStringMap []map[string]string 
+	// "message":"hello"
+	// [{""}]
+	var listClients []ExpenseFormModelClient
+	for rows.Next() {
+		var client ExpenseFormModelClient
+
+		err := rows.Scan(
+			&client.Id,
+			&client.Name,
+			&client.Email,
+			&client.Phone,
+			&client.Address,
+		)
+		if err != nil {
+			return nil, err
+		}
+		
+		listClients = append(listClients, client)
+	}
+
+	return listClients, nil
+
 }
 
 func (s *Store) InsertNewRecordClient(data []ExpenseFormModelClient) error {

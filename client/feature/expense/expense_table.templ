@@ -10,14 +10,20 @@ type ExpenseTableModel struct {
     Rows    []map[string]string
 }
 
+
 type ExpenseTableProps struct {
     Model ExpenseTableModel
 }
 
+
+
+// Column{Key: "Name",Label: "Name",}
+
 templ ExpenseTable(props ExpenseTableProps) {
     if len(props.Model.Rows) > 0  {
     <div class="border rounded-lg p-4">
-    <div x-data="{ showActions: true }" class="w-full">
+    <div x-data="{ showActions: false }" class="w-full">
+    <div id="modal-root"></div>
 
     <div class="flex justify-end mb-3">
         <button
@@ -75,7 +81,12 @@ templ ExpenseTable(props ExpenseTableProps) {
                                 x-show="showActions"
                                 class="px-6 py-4 whitespace-nowrap text-sm flex gap-3"
                             >
-                                <button class="flex items-center gap-1 text-blue-600 hover:text-blue-800">
+                                <button 
+                                    hx-get={"/expense/edit-record/" + row["id"]}
+                                    hx-target="#modal-root"
+                                    hx-swap="innerHTML"
+                                    class="flex items-center gap-1 text-blue-600 hover:text-blue-800"
+                                >
                                     <img src="/public/svg/edit_blue.svg" class="w-5 h-5" />
                                     <span class="text-xs">Edit</span>
                                 </button>
