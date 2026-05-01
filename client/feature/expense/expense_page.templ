@@ -45,7 +45,7 @@ templ ExpensePage(props ExpensePageProps) {
 
         <!-- Action Buttons -->
         @ActionButtonBar(ExpensePageProps{ ViewType: props.ViewType })
-        @ExpenseTable(ExpenseTableProps{Model: props.TableData})
+        @ExpenseTable(ExpenseTableProps{ViewType: props.ViewType, Model: props.TableData})
         @InputFormPanel()    
     </div>
     }

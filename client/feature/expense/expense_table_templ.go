@@ -19,7 +19,8 @@ type ExpenseTableModel struct {
 }
 
 type ExpenseTableProps struct {
-	Model ExpenseTableModel
+	ViewType ExpenseViewType
+	Model    ExpenseTableModel
 }
 
 // Column{Key: "Name",Label: "Name",}
@@ -57,7 +58,7 @@ func ExpenseTable(props ExpenseTableProps) templ.Component {
 				var templ_7745c5c3_Var2 string
 				templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(column.Label)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/feature/expense/expense_table.templ`, Line: 57, Col: 46}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/feature/expense/expense_table.templ`, Line: 58, Col: 46}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 				if templ_7745c5c3_Err != nil {
@@ -85,7 +86,7 @@ func ExpenseTable(props ExpenseTableProps) templ.Component {
 					var templ_7745c5c3_Var3 string
 					templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(row[column.Key])
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/feature/expense/expense_table.templ`, Line: 76, Col: 53}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/feature/expense/expense_table.templ`, Line: 77, Col: 53}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 					if templ_7745c5c3_Err != nil {
@@ -101,9 +102,9 @@ func ExpenseTable(props ExpenseTableProps) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var4 string
-				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("/expense/edit-record/" + row["id"])
+				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("/expense/edit-record/" + string(props.ViewType) + "/" + row["id"])
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/feature/expense/expense_table.templ`, Line: 85, Col: 79}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/feature/expense/expense_table.templ`, Line: 86, Col: 110}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {

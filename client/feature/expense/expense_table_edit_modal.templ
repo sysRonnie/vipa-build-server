@@ -1,13 +1,13 @@
 package expense 
 
 templ EditClientModal(client map[string]string) {
- <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+ <div id="edit-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
     <div class="bg-white rounded-lg shadow-lg w-[500px] p-6">
 
         <h2 class="text-lg font-semibold mb-4">Edit Client</h2>
 
         <form 
-            hx-post={"/expense/update-record/"+client["id"]}
+            hx-post={"/expense/update-record/client/"+client["id"]}
             hx-target="#modal-root"
             hx-swap="innerHTML"
             class="flex flex-col gap-4"
@@ -88,4 +88,12 @@ templ EditClientModal(client map[string]string) {
 
     </div>
 </div>
+
+<script> 
+    function closeModal() {
+        const element = document.getElementById("edit-modal")
+        element.remove()
+    }
+
+</script>
 }

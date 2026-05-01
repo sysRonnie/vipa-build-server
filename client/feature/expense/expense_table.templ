@@ -12,6 +12,7 @@ type ExpenseTableModel struct {
 
 
 type ExpenseTableProps struct {
+    ViewType ExpenseViewType
     Model ExpenseTableModel
 }
 
@@ -82,7 +83,7 @@ templ ExpenseTable(props ExpenseTableProps) {
                                 class="px-6 py-4 whitespace-nowrap text-sm flex gap-3"
                             >
                                 <button 
-                                    hx-get={"/expense/edit-record/" + row["id"]}
+                                    hx-get={"/expense/edit-record/" + string(props.ViewType) + "/" + row["id"]}
                                     hx-target="#modal-root"
                                     hx-swap="innerHTML"
                                     class="flex items-center gap-1 text-blue-600 hover:text-blue-800"

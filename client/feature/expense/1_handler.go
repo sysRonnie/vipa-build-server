@@ -3,9 +3,9 @@ package expense
 import (
 	"log"
 	"strconv"
-
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
+	"go-tailwind-test/client/ui"
 )
 
 type Handler struct {
@@ -24,31 +24,47 @@ func (h *Handler) RegisterExpenseRoutes(g *echo.Group) {
 	g.GET("/expense/:viewType", h.ShowExpensePage)
 	g.GET("/expense", h.ShowExpensePage)
 	g.POST("/expense/insert-new-record", h.HandleInsertNewRecord)
-	g.GET("/expense/edit-record/:rowId", h.HandleEditRecord)
-	g.GET("/expense/update-record/:rowId", h.HandleEditRecord)
+	g.GET("/expense/edit-record/:viewType/:rowId", h.HandleEditRecord)
+	g.POST("/expense/update-record/:viewType/:rowId", h.HandleUpdateRecord)
 }
 
 func (h *Handler) HandleUpdateRecord(c echo.Context) error {
-	param, err := strconv.Atoi(c.Param("rowId"))
+	rowId, err := strconv.Atoi(c.Param("rowId"))
 	if err != nil {
+		log.Println("rowId error", err)
+		
 		return c.JSON(400, "invalid rowId")
 	}
+	viewType, ok := ParseViewType(c.Param("viewType"))
+	if !ok {
+		log.Println("viewType is not okay")
+		log.Println(c.Param("viewType"))
+		return c.JSON(400, "invalid rowId")
+	}
+	log.Println("Here are the params for the handleEditRecord", viewType, rowId)
 
-	log.Println("Updating Recording Hit")
-	return nil
+	return c.JSON(200, "ok")
 
 
 
 }
 
 func (h *Handler) HandleEditRecord(c echo.Context) error {
-	log.Println("HandleEditRecord")
-	param, err := strconv.Atoi(c.Param("rowId"))
+	rowId, err := strconv.Atoi(c.Param("rowId"))
 	if err != nil {
+		log.Println("rowId error", err)
+		
 		return c.JSON(400, "invalid rowId")
 	}
+	viewType, ok := ParseViewType(c.Param("viewType"))
+	if !ok {
+		log.Println("viewType is not okay")
+		log.Println(c.Param("viewType"))
+		return c.JSON(400, "invalid rowId")
+	}
+	log.Println("Here are the params for the handleEditRecord", viewType, rowId)
 
-	row, err := h.service.FetchExpenseTableRow(ViewTypeClient, param)
+	row, err := h.service.FetchExpenseTableRow(viewType, rowId)
 	if err != nil {
 		return c.JSON(400, err.Error())
 	}
@@ -72,7 +88,7 @@ func (h *Handler) HandleInsertNewRecord(c echo.Context) error {
 
     err := h.service.ProcessNewRecordInsertion(viewType, raw)
     if err != nil {
-        return c.JSON(400, err.Error())
+		return render(c, ui.SandboxErrorMessage("Something went wrong"))
     }
 
     return c.JSON(200, "ok")

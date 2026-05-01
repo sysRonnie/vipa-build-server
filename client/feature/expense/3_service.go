@@ -18,7 +18,7 @@ type ExpenseService interface {
 	ProcessNewRecordInsertion(viewType ExpenseViewType, data map[string][]string) error
 	ProcessExpenseTablePayload(viewType ExpenseViewType) (ExpenseTableModel, error)
 	FetchExpenseTableRow(viewType ExpenseViewType, rowId int) (map[string]string, error)
-	Update
+	
 }
 
 func (s *Service) FetchExpenseTableRow(viewType ExpenseViewType, rowId int) (map[string]string, error) {
