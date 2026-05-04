@@ -77,7 +77,7 @@ func ExpenseForm(props ExpenseFormProps) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if props.ViewType == ViewTypeClient {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form id=\"expense-form\" class=\"w-full max-w-5xl space-y-3\" hx-post=\"/expense/insert-new-record\" hx-target=\"#server-response-container\" hx-swap=\"innerHTML\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form id=\"expense-form\" class=\"w-full max-w-5xl space-y-3\" hx-post=\"/expense/insert-new-record\" hx-target=\"find #server-response-container\" hx-swap=\"innerHTML\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -90,7 +90,7 @@ func ExpenseForm(props ExpenseFormProps) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!-- Actions --><div class=\"flex flex-row justify-end pt-2\"><div id=\"server-response-container\"></div><button type=\"submit\" class=\"btn btn-primary\">Save Client</button></div></form>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!-- Actions --><div class=\"flex items-center justify-end gap-3 pt-2\"><div id=\"server-response-container\" class=\"text-sm\"></div><button type=\"submit\" class=\"btn btn-primary\">Save Client</button></div></form>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -102,15 +102,28 @@ func ExpenseTable(props ExpenseTableProps) templ.Component {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var4 string
-				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("/expense/edit-record/" + string(props.ViewType) + "/" + row["id"])
+				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs("/expense/modal-edit-record/" + string(props.ViewType) + "/" + row["id"])
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/feature/expense/expense_table.templ`, Line: 86, Col: 110}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/feature/expense/expense_table.templ`, Line: 86, Col: 116}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#modal-root\" hx-swap=\"innerHTML\" class=\"flex items-center gap-1 text-blue-600 hover:text-blue-800\"><img src=\"/public/svg/edit_blue.svg\" class=\"w-5 h-5\"> <span class=\"text-xs\">Edit</span></button> <button class=\"flex items-center gap-1 text-red-600 hover:text-red-800\"><img src=\"/public/svg/delete_red.svg\" class=\"w-5 h-5\"> <span class=\"text-xs\">Delete</span></button></td></tr>")
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#modal-root\" hx-swap=\"innerHTML\" class=\"flex items-center gap-1 text-blue-600 hover:text-blue-800\"><img src=\"/public/svg/edit_blue.svg\" class=\"w-5 h-5\"> <span class=\"text-xs\">Edit</span></button> <button hx-get=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var5 string
+				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs("/expense/modal-remove-record/" + string(props.ViewType) + "/" + row["id"])
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `client/feature/expense/expense_table.templ`, Line: 96, Col: 118}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#modal-root\" hx-swap=\"innerHTML\" class=\"flex items-center gap-1 text-red-600 hover:text-red-800\"><img src=\"/public/svg/delete_red.svg\" class=\"w-5 h-5\"> <span class=\"text-xs\">Delete</span></button></td></tr>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

@@ -24,8 +24,55 @@ func (h *Handler) RegisterExpenseRoutes(g *echo.Group) {
 	g.GET("/expense/:viewType", h.ShowExpensePage)
 	g.GET("/expense", h.ShowExpensePage)
 	g.POST("/expense/insert-new-record", h.HandleInsertNewRecord)
-	g.GET("/expense/edit-record/:viewType/:rowId", h.HandleEditRecord)
+	g.GET("/expense/modal-edit-record/:viewType/:rowId", h.GetModalEditRecord)
+	g.GET("/expense/modal-remove-record/:viewType/:rowId", h.GetModalRemoveRecord)
 	g.POST("/expense/update-record/:viewType/:rowId", h.HandleUpdateRecord)
+	g.POST("/expense/remove-record/:viewType/:rowId", h.HandleRemoveRecord)
+}
+
+func (h *Handler) HandleRemoveRecord(c echo.Context) error {
+	rowId, err := strconv.Atoi(c.Param("rowId"))
+	if err != nil {
+		log.Println("rowId error", err)
+		
+		return c.JSON(400, "invalid rowId")
+	}
+	viewType, ok := ParseViewType(c.Param("viewType"))
+	if !ok {
+		log.Println("viewType is not okay")
+		log.Println(c.Param("viewType"))
+		return c.JSON(400, "invalid rowId")
+	}
+
+	err = h.service.ProcessRemoveRecordRequest(viewType, rowId)
+	if err != nil {
+		return c.JSON(400, err.Error())
+	}
+	log.Println("Here are the params for the handleRemoveRecord", viewType, rowId)
+
+	return c.JSON(200, "ok")
+}
+
+func (h *Handler) GetModalRemoveRecord(c echo.Context) error {
+	rowId, err := strconv.Atoi(c.Param("rowId"))
+	if err != nil {
+		log.Println("rowId error", err)
+		
+		return c.JSON(400, "invalid rowId")
+	}
+	viewType, ok := ParseViewType(c.Param("viewType"))
+	if !ok {
+		log.Println("viewType is not okay")
+		log.Println(c.Param("viewType"))
+		return c.JSON(400, "invalid rowId")
+	}	
+
+
+	row, err := h.service.FetchExpenseTableRow(viewType, rowId)
+	if err != nil {
+		return c.JSON(400, err.Error())
+	}
+	return render(c, ModalRemoveClient(row))
 }
 
 func (h *Handler) HandleUpdateRecord(c echo.Context) error {
@@ -49,7 +96,7 @@ func (h *Handler) HandleUpdateRecord(c echo.Context) error {
 
 }
 
-func (h *Handler) HandleEditRecord(c echo.Context) error {
+func (h *Handler) GetModalEditRecord(c echo.Context) error {
 	rowId, err := strconv.Atoi(c.Param("rowId"))
 	if err != nil {
 		log.Println("rowId error", err)
@@ -68,7 +115,7 @@ func (h *Handler) HandleEditRecord(c echo.Context) error {
 	if err != nil {
 		return c.JSON(400, err.Error())
 	}
-	return render(c, EditClientModal(row))
+	return render(c, ModalEditClient(row))
 }
 
 func (h *Handler) HandleInsertNewRecord(c echo.Context) error {
@@ -88,7 +135,11 @@ func (h *Handler) HandleInsertNewRecord(c echo.Context) error {
 
     err := h.service.ProcessNewRecordInsertion(viewType, raw)
     if err != nil {
-		return render(c, ui.SandboxErrorMessage("Something went wrong"))
+		if dupErr, ok := err.(*DuplicateClientNameError); ok {
+			return render(c, ui.SandboxErrorMessage(dupErr.Error()))
+		} else {
+			return render(c, ui.SandboxErrorMessage("Something went wrong htmx"))
+		}
     }
 
     return c.JSON(200, "ok")

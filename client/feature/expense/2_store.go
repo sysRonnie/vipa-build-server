@@ -2,6 +2,9 @@ package expense
 
 import (
 	"database/sql"
+	"fmt"
+	"log"
+	"strings"
 )
 
 type Store struct {
@@ -16,8 +19,33 @@ func NewExpenseStore(db *sql.DB) *Store {
 
 type ExpenseStore interface {
 	InsertNewRecordClient(data []ExpenseFormModelClient) error
+	RemoveRecordClient(id int) error
 	QueryMasterClientList() ([]ExpenseFormModelClient, error)
 	QueryMasterClientListRowById(id int) (ExpenseFormModelClient, error)
+}
+
+
+func (s *Store) RemoveRecordClient(id int) error {
+	result, err := s.db.Exec(`
+		UPDATE master_client_list 
+		SET flag_is_deleted = true 
+		WHERE id = $1
+	`, id)
+	if err != nil {
+		log.Println("Error in RemoveRecordClient:", err)
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("no client found with id %d", id)
+	}
+
+	return nil
 }
 
 func (s *Store) QueryMasterClientListRowById(id int) (ExpenseFormModelClient, error) {
@@ -113,9 +141,16 @@ func (s *Store) InsertNewRecordClient(data []ExpenseFormModelClient) error {
             client.Address,
         )
 
-        if err != nil {
-            return err
-        }
+		if err != nil {
+			log.Println("client info", client.Name)
+			log.Println("Error inserting client:", err)
+		
+			if strings.Contains(err.Error(), "master_client_list_client_name_key") {
+				return &DuplicateClientNameError{Name: client.Name}
+			}
+		
+			return err
+		}
     }
 
     return tx.Commit()

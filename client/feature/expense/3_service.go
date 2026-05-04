@@ -18,7 +18,19 @@ type ExpenseService interface {
 	ProcessNewRecordInsertion(viewType ExpenseViewType, data map[string][]string) error
 	ProcessExpenseTablePayload(viewType ExpenseViewType) (ExpenseTableModel, error)
 	FetchExpenseTableRow(viewType ExpenseViewType, rowId int) (map[string]string, error)
-	
+	ProcessRemoveRecordRequest(viewType ExpenseViewType, rowId int) error
+}
+
+func (s *Service) ProcessRemoveRecordRequest(viewType ExpenseViewType, rowId int) error {
+	log.Println("ProcessRemoveRecordRequest is working now")
+
+	switch viewType {
+	case ViewTypeClient:
+		log.Println("client branch, removing record")
+		return s.store.RemoveRecordClient(rowId)
+	default:
+		return fmt.Errorf("unknown viewType: %s", viewType)
+	}
 }
 
 func (s *Service) FetchExpenseTableRow(viewType ExpenseViewType, rowId int) (map[string]string, error) {
