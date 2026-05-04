@@ -1,7 +1,7 @@
 run:
 	bash bobby.sh
 	templ generate
-	npx tailwindcss -i ./public/input.css -o ./public/styles.css 
+	tailwindcss -i ./public/input.css -o ./public/styles.css 
 	go run cmd/main.go
 
 migration:
