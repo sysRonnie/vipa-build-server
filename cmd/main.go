@@ -30,7 +30,7 @@ func main() {
 		log.Fatal("Client Server failed to initalize",err)
 	}
 
-	if err := app.Start(":4200"); err != nil {
+	if err := app.Start(":8080"); err != nil {
 		log.Fatal(err)
 	}
 }

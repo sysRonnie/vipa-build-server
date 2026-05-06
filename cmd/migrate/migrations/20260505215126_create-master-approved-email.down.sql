@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS master_approved_email;

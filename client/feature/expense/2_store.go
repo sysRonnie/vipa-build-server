@@ -22,6 +22,23 @@ type ExpenseStore interface {
 	RemoveRecordClient(id int) error
 	QueryMasterClientList() ([]ExpenseFormModelClient, error)
 	QueryMasterClientListRowById(id int) (ExpenseFormModelClient, error)
+	CheckClientNameExists(tx *sql.Tx, name string) (bool, error)
+}
+
+func (s *Store) CheckClientNameExists(tx *sql.Tx, name string) (bool, error) {
+	var exists bool
+	err := tx.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM master_client_list
+			WHERE lower(client_name) = lower($1)
+			AND flag_is_deleted = false
+		)
+	`, name).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
 }
 
 
@@ -132,6 +149,14 @@ func (s *Store) InsertNewRecordClient(data []ExpenseFormModelClient) error {
     }()
 
     for _, client := range data {
+		exists, err := s.CheckClientNameExists(tx, client.Name)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return &DuplicateClientNameError{Name: client.Name}
+		}
+
         _, err = tx.Exec(
             `INSERT INTO master_client_list (client_name, client_email, client_phone, client_address)
              VALUES ($1, $2, $3, $4)`,

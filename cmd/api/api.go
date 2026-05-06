@@ -2,7 +2,7 @@ package api
 
 import (
 	"database/sql"
-	"log"
+	"go-tailwind-test/internal/services/user"
 
 	"github.com/labstack/echo/v4"
 )
@@ -20,9 +20,12 @@ func NewAPIServer(db *sql.DB) *API {
 
 func (s *API) APIService(e *echo.Echo) error {
 	v1 := e.Group("/api/v1")
-	if v1 != nil {
-		log.Println("API service registered")
 
-	}
+	userStore := user.NewUserStore(s.db)
+	userService := user.NewService(userStore)
+	userHandler := user.NewHandler(userService, userStore)
+	userHandler.RegisterUserRoutes(v1)
+
+	
 	return nil
 }
