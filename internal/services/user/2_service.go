@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"errors"
 	"go-tailwind-test/internal/config"
 	"go-tailwind-test/internal/services/auth"
 	"log"
@@ -47,9 +46,7 @@ func (s *Service) RefreshAccessToken(ctx context.Context, refreshToken string, u
 		)
 
 	if err != nil {
-		return nil, errors.New(
-			"invalid refresh token",
-		)
+		return nil, ErrInvalidRefreshToken
 	}
 
 	email, isAdmin, err :=
@@ -58,7 +55,7 @@ func (s *Service) RefreshAccessToken(ctx context.Context, refreshToken string, u
 		session.UserID,
 	)
 	if err != nil {
-		return nil, err
+		return nil, ErrDatabaseFailure
 	}
 
 	accessToken, err :=
@@ -69,7 +66,7 @@ func (s *Service) RefreshAccessToken(ctx context.Context, refreshToken string, u
 		)
 
 	if err != nil {
-		return nil, err
+		return nil, ErrLoginFailed
 	}
 
 	newRefreshToken := auth.GenerateRefreshToken()
@@ -92,13 +89,11 @@ func (s *Service) RefreshAccessToken(ctx context.Context, refreshToken string, u
 	)
 
 	if err != nil {
-
 		log.Println(
 			"failed to insert auth session",
 			err,
 		)
-
-		return nil, err
+		return nil, ErrDatabaseFailure
 	}
 
 	return &auth.AuthResponse{
@@ -124,35 +119,35 @@ func (s *Service) Login(params LoginServiceParams) (*auth.AuthResponse, error) {
 	)
 
 	if err != nil {
-		return nil, err
+		return nil, ErrLoginFailed
 	}
 
 	emailValue, ok := payload.Claims["email"]
 
 	if !ok {
-		return nil, errors.New("missing email claim")
+		return nil, ErrLoginFailed
 	}
 
 	email, ok := emailValue.(string)
 
 	if !ok {
-		return nil, errors.New("invalid email claim",)
+		return nil, ErrLoginFailed
 	}
 
 	isAllowed, isAdmin, err := s.store.IsApprovedEmail(params.ctx,email)
 
 	if err != nil {
-		return nil, err
+		return nil, ErrDatabaseFailure
 	}
 
 	if !isAllowed {
-		return nil, errors.New("user not authorized")
+		return nil, ErrUserNotAuthorized
 	}
 
 	uuid, err := s.store.GetOrCreateUser(params.ctx, email, payload.Subject)
 	
 	if err != nil {
-		return nil, err
+		return nil, ErrDatabaseFailure
 	}
 
 	log.Println("new user created", uuid)
@@ -183,7 +178,7 @@ refreshTokenHash :=
 			err,
 		)
 
-		return nil, err
+		return nil, ErrDatabaseFailure
 	}
 
 	accessToken, err :=
@@ -194,7 +189,7 @@ refreshTokenHash :=
 		)
 
 	if err != nil {
-		return nil, err
+		return nil, ErrLoginFailed
 	}
 
 	return &auth.AuthResponse{

@@ -26,7 +26,6 @@ func (h *Handler) RegisterUserRoutes(g *echo.Group) {
 	g.POST("/login-user", h.HandleLoginRequest)
 	g.POST("/handle-refresh-token", h.HandleRefreshTokenRequest)
 	g.POST("/handle-logout", h.HandleLogoutRequest, auth.Middleware)
-	g.GET("/test-auth", h.HandleTestAuth, auth.Middleware)
 }
 
 func (h *Handler) HandleLogoutRequest(c echo.Context,) error {
@@ -35,22 +34,13 @@ func (h *Handler) HandleLogoutRequest(c echo.Context,) error {
 		string(auth.ClaimsContextKey),
 	).(*auth.Claims)
 
-	log.Println(
-		"LOGOUT SESSION ID:",
-		claims.SessionID,
-	)
 
 	err := h.store.RevokeAuthSession(
 		c.Request().Context(),
 		claims.SessionID,
 	)
 	if err != nil {
-		log.Println("error revoking auth session:",err,)
-		return network.Fail(c,network.SandboxResponse{
-				StatusCode: 500,
-				Message: "Logout failed",
-			},
-		)
+		return network.FailFromError(c, err)
 	}
 
 	return network.Success(c,network.SandboxResponse{
@@ -83,10 +73,7 @@ func (h *Handler) HandleRefreshTokenRequest(c echo.Context,) error {
 
 	if err != nil {
 		log.Println("Error refreshing access token:", err)
-		return network.Fail(c, network.SandboxResponse{
-			StatusCode: 401,
-			Message: "Invalid refresh token",
-		})
+		return network.FailFromError(c, err)
 	}
 
 	log.Println("--- refreshed jwt for client -----")

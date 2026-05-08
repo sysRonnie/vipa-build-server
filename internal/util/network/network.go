@@ -1,6 +1,8 @@
 package network
 
 import (
+	"errors"
+	errs "go-tailwind-test/internal/util/err"
 	"log"
 
 	"github.com/labstack/echo/v4"
@@ -20,6 +22,33 @@ type ErrorResponse struct {
 type SandboxRoute struct {
 	URL string 
 	Method string
+}
+
+func FailFromError(
+	c echo.Context,
+	err error,
+) error {
+
+	var appErr *errs.AppError
+
+	if errors.As(err, &appErr) {
+
+		return c.JSON(
+			appErr.StatusCode,
+			SandboxResponse{
+				StatusCode: appErr.StatusCode,
+				Message: appErr.Message,
+			},
+		)
+	}
+
+	return c.JSON(
+		500,
+		SandboxResponse{
+			StatusCode: 500,
+			Message: "Internal server error",
+		},
+	)
 }
 
 // SandboxResponse standardizes API success and error responses.
