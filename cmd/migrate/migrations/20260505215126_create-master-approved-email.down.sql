@@ -1,1 +1,3 @@
-DROP TABLE IF EXISTS master_approved_email;
+-- DOWN
+
+DROP TABLE IF EXISTS user_auth_approved_email;

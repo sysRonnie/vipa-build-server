@@ -5,6 +5,7 @@ import (
 	"go-tailwind-test/cmd/api"
 	"go-tailwind-test/internal/config"
 	"go-tailwind-test/internal/db"
+	"go-tailwind-test/internal/util/validator"
 	"log"
 
 	"github.com/labstack/echo/v4"
@@ -12,6 +13,7 @@ import (
 
 func main() {
 	app := echo.New()
+	app.Validator = validator.NewCustomValidator()
 	app.Static("/public", "public")
 
 	cfg := config.Envs
