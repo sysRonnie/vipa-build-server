@@ -5,6 +5,7 @@ import (
 	"go-tailwind-test/cmd/api"
 	"go-tailwind-test/internal/config"
 	"go-tailwind-test/internal/db"
+	"go-tailwind-test/internal/util/advisor"
 	"go-tailwind-test/internal/util/validator"
 	"log"
 
@@ -15,6 +16,7 @@ func main() {
 	app := echo.New()
 	app.Validator = validator.NewCustomValidator()
 	app.Static("/public", "public")
+	app.Use(advisor.Middleware)
 
 	cfg := config.Envs
 	db, err := db.InitializePostgresDB(cfg.DatabaseDSN)

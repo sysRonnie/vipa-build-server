@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS master_customer_list;

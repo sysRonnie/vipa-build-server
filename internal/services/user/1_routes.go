@@ -2,6 +2,7 @@ package user
 
 import (
 	"go-tailwind-test/internal/services/auth"
+	"go-tailwind-test/internal/util/advisor"
 	"go-tailwind-test/internal/util/network"
 	"log"
 
@@ -26,19 +27,23 @@ func (h *Handler) RegisterUserRoutes(g *echo.Group) {
 	g.POST("/login-user", h.HandleLoginRequest)
 	g.POST("/handle-refresh-token", h.HandleRefreshTokenRequest)
 	g.POST("/handle-logout", h.HandleLogoutRequest, auth.Middleware)
+	g.GET("/test-auth", h.HandleTestAuth, auth.Middleware)
+}
+
+func (h *Handler) HandleTest(c echo.Context) error {
+
+	return network.Success(c, network.SandboxResponse{
+		StatusCode: 200,
+		Message: "This is a test endpoint for the user service",
+	})
 }
 
 func (h *Handler) HandleLogoutRequest(c echo.Context,) error {
+	advisor := advisor.FromContext(c.Request().Context())
+	advisor.Log("handling_logout_request")
+	claims := auth.GetClaimsFromContext(c)
 
-	claims := c.Get(
-		string(auth.ClaimsContextKey),
-	).(*auth.Claims)
-
-
-	err := h.store.RevokeAuthSession(
-		c.Request().Context(),
-		claims.SessionID,
-	)
+	err := h.store.RevokeAuthSession(c.Request().Context(),claims.SessionID)
 	if err != nil {
 		return network.FailFromError(c, err)
 	}
@@ -51,7 +56,8 @@ func (h *Handler) HandleLogoutRequest(c echo.Context,) error {
 }
 
 func (h *Handler) HandleRefreshTokenRequest(c echo.Context,) error {
-
+	advisor := advisor.FromContext(c.Request().Context())
+	advisor.Log("handling_refresh_token_request")
 	accessHeader := c.Request().Header.Get("Authorization")
 	refreshToken := c.Request().Header.Get("X-Refresh-Token")
 	if refreshToken == "" {
@@ -106,17 +112,18 @@ func (h *Handler) HandleTestAuth(c echo.Context) error {
 }
 
 func (h *Handler) HandleLoginRequest(c echo.Context) error {
+	advisor := advisor.FromContext(c.Request().Context())
+	advisor.Log("handling_login_request")
 	var req LoginRequest
 	if err := c.Bind(&req); err != nil {
-		return network.Fail(c, network.SandboxResponse{
-			StatusCode: 400,
-			Message: "Invalid Request",
-		})
+		advisor.Error("failed_to_bind_login_request", err)
+		return network.Fail(c, network.ErrInvalidPayload)
 	}
 
-	ip := c.RealIP()
-	ua := c.Request().UserAgent()
+	ip, ua := network.ExtractIPandAgent(c)
 	ctx := c.Request().Context()
+	
+	advisor.Log("extracted_ip_and_user_agent_beginning_login_service")
 
 	res, err := h.service.Login(LoginServiceParams{
 		ctx: ctx,
@@ -126,16 +133,11 @@ func (h *Handler) HandleLoginRequest(c echo.Context) error {
 	})
 	
 	if err != nil {
-		log.Println("login error", err)
-		return network.Fail(c, network.SandboxResponse{
-			StatusCode: 500,
-			Message: "Login failed",
-		})
+		advisor.Error("login_service_failed", err)
+		return network.FailFromError(c, err)
 	}
 
-	log.Println("--- issuing a new jwt to client -----")
-	log.Println("[HandleLoginRequest] jwt = ", res.AccessToken)
-	log.Println("[HandleLoginRequest] refreshToken = ", res.RefreshToken)
+	advisor.Log("--- issuing a new jwt to client -----")
 
 	return network.Success(c, network.SandboxResponse{
 		StatusCode: 200,

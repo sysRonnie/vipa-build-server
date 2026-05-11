@@ -13,9 +13,13 @@ type ContextKey string
 
 const ClaimsContextKey ContextKey = "auth_claims"
 
-func Middleware(
-	next echo.HandlerFunc,
-) echo.HandlerFunc {
+func GetClaimsFromContext(ctx echo.Context) (*Claims) {
+	claims  := ctx.Get(string(ClaimsContextKey)).(*Claims)
+
+	return claims
+}
+
+func Middleware(next echo.HandlerFunc,) echo.HandlerFunc {
 
 	return func(c echo.Context) error {
 
