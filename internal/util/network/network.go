@@ -112,10 +112,10 @@ func Fail(c echo.Context, template SandboxResponse, customMessage ...string) err
 // Returns a non-nil error if either step fails.
 func BindAndValidate(c echo.Context, v any) error {
 	if err := c.Bind(v); err != nil {
-		return err
+		return ErrInvalidRequest
 	}
 	if err := c.Validate(v); err != nil {
-		return err
+		return ErrValidationFailed
 	}
 	return nil
 }

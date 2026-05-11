@@ -117,7 +117,7 @@ func (h *Handler) HandleLoginRequest(c echo.Context) error {
 	var req LoginRequest
 	if err := c.Bind(&req); err != nil {
 		advisor.Error("failed_to_bind_login_request", err)
-		return network.Fail(c, network.ErrInvalidPayload)
+		return network.FailFromError(c, network.ErrInvalidRequest)
 	}
 
 	ip, ua := network.ExtractIPandAgent(c)

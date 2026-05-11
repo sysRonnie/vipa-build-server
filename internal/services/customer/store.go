@@ -14,53 +14,124 @@ func NewCustomerStore(db *sql.DB) *Store {
 }
 
 type CustomerStore interface {
-	InsertCustomer(ctx context.Context, name, phone, email, comment string) error
+	InsertCustomer(ctx context.Context, newCustomer CustomerRow) error
 	QueryCustomerList(ctx context.Context) ([]CustomerRow, error)
+	QueryCustomerListRecycled(ctx context.Context) ([]CustomerRow, error)
+	QueryCustomerById(ctx context.Context, id int) (*CustomerRow, error)
+	UpdateCustomer(ctx context.Context, customer CustomerInsertRequest) error
+	DeleteCustomer(ctx context.Context, id int) error
+	CheckCustomerExists(ctx context.Context, firstName, lastName string) (bool, error)
+	CheckCustomerExistsRecycled(ctx context.Context, firstName, lastName string) (bool, error)
 }
 
-func (s *Store) InsertCustomer(ctx context.Context, name, phone, email, comment string) error {
-	_, err := s.db.ExecContext(ctx, `
-		INSERT INTO master_customer_list (
-			customer_name,
-			customer_phone,
-			customer_email,
-			comment
-		)
-		VALUES ($1, $2, $3, $4)
-	`, name, phone, email, comment)
+func (s *Store) DeleteCustomer(ctx context.Context, id int) error {
+	_, err := s.db.ExecContext(ctx, baseCustomerSoftDelete, id)
+	return err
+}
+
+func (s *Store) CheckCustomerExistsRecycled(ctx context.Context, firstName, lastName string) (bool, error) {
+	var exists bool
+	err := s.db.QueryRowContext(ctx, baseCustomerExistsRecycledQuery, firstName, lastName).Scan(&exists)
+	return exists, err
+}
+
+func (s *Store) CheckCustomerExists(ctx context.Context, firstName, lastName string) (bool, error) {
+	var exists bool
+	err := s.db.QueryRowContext(ctx, baseCustomerExistsQuery, firstName, lastName).Scan(&exists)
+	return exists, err
+}
+
+
+func (s *Store) UpdateCustomer(ctx context.Context, customer CustomerInsertRequest) error {
+
+	result, err := s.db.ExecContext(ctx, baseCustomerUpdate,
+		customer.Customer.FirstName,
+		customer.Customer.LastName,
+		customer.Customer.Phone,
+		customer.Customer.Email,
+		customer.Customer.Comment,
+		customer.Customer.AddressStreet,
+		customer.Customer.AddressUnit,
+		customer.Customer.AddressCity,
+		customer.Customer.AddressState,
+		customer.Customer.AddressZip,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
+
+func (s *Store) QueryCustomerById(ctx context.Context, id int) (*CustomerRow, error) {
+	row := s.db.QueryRowContext(
+		ctx,
+		buildCustomerDetailQuery(),
+		id,
+	)
+
+	customer, err := scanCustomerRow(row)
+	if err != nil {
+		return nil, err
+	}
+
+	return &customer, nil
+}
+
+func (s *Store) InsertCustomer(ctx context.Context, newCustomer CustomerRow) error {
+	_, err := s.db.ExecContext(ctx, baseCustomerInsert,
+		newCustomer.FirstName,
+		newCustomer.LastName,
+		newCustomer.Phone,
+		newCustomer.Email,
+		newCustomer.AddressStreet,
+		newCustomer.AddressUnit,
+		newCustomer.AddressCity,
+		newCustomer.AddressState,
+		newCustomer.AddressZip,
+		newCustomer.Comment,
+	)
 
 	return err
 }
 
+
+
 func (s *Store) QueryCustomerList(ctx context.Context) ([]CustomerRow, error) {
-	rows, err := s.db.QueryContext(ctx, `
-		SELECT
-			id,
-			customer_name,
-			customer_phone,
-			customer_email,
-			comment
-		FROM master_customer_list
-		WHERE flag_is_deleted = false
-		ORDER BY created_at DESC
-	`)
+	return s.queryCustomers(ctx, false)
+}
+
+func (s *Store) QueryCustomerListRecycled(ctx context.Context) ([]CustomerRow, error) {
+	return s.queryCustomers(ctx, true)
+}
+
+func (s *Store) queryCustomers(ctx context.Context, recycled bool) ([]CustomerRow, error) {
+	rows, err := s.db.QueryContext(
+		ctx,
+		buildCustomerListQuery(recycled),
+		recycled,
+	)
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	customers := []CustomerRow{}
 
 	for rows.Next() {
-		var customer CustomerRow
-
-		if err := rows.Scan(
-			&customer.ID,
-			&customer.Name,
-			&customer.Phone,
-			&customer.Email,
-			&customer.Comment,
-		); err != nil {
+		customer, err := scanCustomerRow(rows)
+		if err != nil {
 			return nil, err
 		}
 
@@ -72,4 +143,30 @@ func (s *Store) QueryCustomerList(ctx context.Context) ([]CustomerRow, error) {
 	}
 
 	return customers, nil
+}
+type customerScanner interface {
+	Scan(dest ...any) error
+}
+
+func scanCustomerRow(scanner customerScanner) (CustomerRow, error) {
+	var customer CustomerRow
+
+	err := scanner.Scan(
+		&customer.ID,
+		&customer.FirstName,
+		&customer.LastName,
+		&customer.Phone,
+		&customer.Email,
+		&customer.AddressStreet,
+		&customer.AddressUnit,
+		&customer.AddressCity,
+		&customer.AddressState,
+		&customer.AddressZip,
+		&customer.Comment,
+		&customer.IsDeleted,
+		&customer.CreatedAt,
+		&customer.UpdatedAt,
+	)
+
+	return customer, err
 }
