@@ -93,3 +93,11 @@ const baseCustomerExistsRecycledQuery = `
 			AND flag_is_deleted = true
 		)
 `
+
+const baseCustomerNamesQuery = `
+		SELECT CONCAT(customer_name_first, ' ', customer_name_last) AS full_name
+		FROM master_customer_list
+		WHERE flag_is_deleted = false
+		ORDER BY created_at DESC
+`
+

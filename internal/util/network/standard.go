@@ -1,6 +1,10 @@
 package network
 
-import errs "go-tailwind-test/internal/util/err"
+import (
+	errs "go-tailwind-test/internal/util/err"
+
+	"github.com/labstack/echo/v4"
+)
 
 
 var (
@@ -39,10 +43,18 @@ var (
 	}
 )
 
-func BuildSuccessResponse(data any) SandboxResponse {
-	return SandboxResponse{
+func BuildSuccessResponse(c echo.Context, data any) error {
+	return Respond(c, SandboxResponse{
 		StatusCode: 200,
-		Message:    "ok",
-		Data:       data,
-	}
+		Message: "Success!",
+		Data: data,
+	})
 }
+
+func BuildSuccessResponseOK(c echo.Context) error {
+	return Respond(c, SandboxResponse{
+		StatusCode: 200,
+		Message: "Success!",
+	})
+}
+

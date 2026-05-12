@@ -22,6 +22,31 @@ type CustomerStore interface {
 	DeleteCustomer(ctx context.Context, id int) error
 	CheckCustomerExists(ctx context.Context, firstName, lastName string) (bool, error)
 	CheckCustomerExistsRecycled(ctx context.Context, firstName, lastName string) (bool, error)
+	QueryCustomerNames(ctx context.Context) ([]string, error)
+}
+
+func (s *Store) QueryCustomerNames(ctx context.Context) ([]string, error) {
+	rows, err := s.db.QueryContext(ctx, baseCustomerNamesQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	
+	var names []string
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+		names = append(names, name)
+	}
+	
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return names, nil
 }
 
 func (s *Store) DeleteCustomer(ctx context.Context, id int) error {

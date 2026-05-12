@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"go-tailwind-test/internal/services/customer"
+	"go-tailwind-test/internal/services/project"
 	"go-tailwind-test/internal/services/user"
 
 	"github.com/labstack/echo/v4"
@@ -31,6 +32,11 @@ func (s *API) APIService(e *echo.Echo) error {
 	customerService := customer.NewCustomerService(customerStore)
 	customerHandler := customer.NewCustomerHandler(customerService, customerStore)
 	customerHandler.RegisterCustomerRoutes(v1)
+
+	projectStore := project.NewProjectStore(s.db)
+	projectService := project.NewProjectService(projectStore)
+	projectHandler := project.NewProjectHandler(projectService, projectStore)
+	projectHandler.RegisterProjectRoutes(v1)
 
 	
 	return nil
