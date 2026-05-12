@@ -5,6 +5,7 @@ import (
 	"go-tailwind-test/internal/services/customer"
 	"go-tailwind-test/internal/services/project"
 	"go-tailwind-test/internal/services/user"
+	"go-tailwind-test/internal/services/vendor"
 
 	"github.com/labstack/echo/v4"
 )
@@ -38,6 +39,10 @@ func (s *API) APIService(e *echo.Echo) error {
 	projectHandler := project.NewProjectHandler(projectService, projectStore)
 	projectHandler.RegisterProjectRoutes(v1)
 
+	vendorStore := vendor.NewVendorStore(s.db)
+	vendorService := vendor.NewVendorService(vendorStore)
+	vendorHandler := vendor.NewVendorHandler(vendorService, vendorStore)
+	vendorHandler.RegisterVendorRoutes(v1)
 	
 	return nil
 }

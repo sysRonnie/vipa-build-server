@@ -1,0 +1,101 @@
+package vendor
+
+import (
+	"context"
+	"database/sql"
+)
+
+type Store struct {
+	db *sql.DB
+}
+
+
+func NewVendorStore(db *sql.DB) *Store {
+	return &Store{db: db}
+}
+
+type VendorStore interface {
+	QueryVendorList(ctx context.Context) ([]VendorRow, error)
+	QueryVendorListRecycled(ctx context.Context) ([]VendorRow, error)
+	QueryVendorByID(ctx context.Context, id int) (*VendorRow, error)
+	InsertVendor(ctx context.Context, newVendor VendorRow) error
+	UpdateVendor(ctx context.Context, updatedVendor VendorRow) error
+	DeleteVendor(ctx context.Context, id int) error
+}
+
+
+func (s *Store) DeleteVendor(ctx context.Context, id int) error {
+	_, err := s.db.ExecContext(ctx, baseVendorDelete, id)
+	return err
+}
+
+func (s *Store) UpdateVendor(ctx context.Context, updatedVendor VendorRow) (err error) {
+	res, err := s.db.ExecContext(ctx, baseVendorUpdate,
+		updatedVendor.Name,
+		updatedVendor.PrimaryContact,
+		updatedVendor.Phone,
+		updatedVendor.Email,
+		updatedVendor.AddressStreet,
+		updatedVendor.AddressUnit,
+		updatedVendor.AddressCity,
+		updatedVendor.AddressState,
+		updatedVendor.AddressZip,
+		updatedVendor.Comment,
+		updatedVendor.ID,
+	)
+	
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
+func (s *Store) InsertVendor(ctx context.Context, newVendor VendorRow) error {
+	_, err := s.db.ExecContext(ctx, baseVendorInsert,
+		newVendor.Name,
+		newVendor.PrimaryContact,
+		newVendor.Phone,
+		newVendor.Email,
+		newVendor.AddressStreet,
+		newVendor.AddressUnit,
+		newVendor.AddressCity,
+		newVendor.AddressState,
+		newVendor.AddressZip,
+		newVendor.Comment,
+	)
+	return err
+}
+
+func (s *Store) QueryVendorList(ctx context.Context) ([]VendorRow, error) {
+	rows, err := s.db.QueryContext(ctx, buildVendorListQuery())
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return ScanVendorRows(rows)
+}
+
+func (s *Store) QueryVendorListRecycled(ctx context.Context) ([]VendorRow, error) {
+	rows, err := s.db.QueryContext(ctx, buildVendorListRecycledQuery())
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return ScanVendorRows(rows)
+}
+
+func (s *Store) QueryVendorByID(ctx context.Context, id int) (*VendorRow, error) {
+	row := s.db.QueryRowContext(ctx, baseVendorByIDQuery, id)
+	return ScanVendorRow(row)
+}
+
+
