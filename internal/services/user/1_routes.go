@@ -43,6 +43,8 @@ func (h *Handler) HandleLogoutRequest(c echo.Context,) error {
 	advisor.Log("handling_logout_request")
 	claims := auth.GetClaimsFromContext(c)
 
+	advisor.Log("revoking auth session with session ID: " + claims.SessionID.String())
+
 	err := h.store.RevokeAuthSession(c.Request().Context(),claims.SessionID)
 	if err != nil {
 		return network.FailFromError(c, err)
@@ -68,8 +70,8 @@ func (h *Handler) HandleRefreshTokenRequest(c echo.Context,) error {
 		)
 	}
 
-	log.Println("REFRESH ACCESS HEADER:",accessHeader)
-	log.Println("REFRESH TOKEN:",refreshToken,)
+	advisor.Log("extracted access token from header: " + accessHeader)
+	advisor.Log("extracted refresh token from header: " + refreshToken)
 
 	ctx := c.Request().Context()
 	ip := c.RealIP()
@@ -78,13 +80,13 @@ func (h *Handler) HandleRefreshTokenRequest(c echo.Context,) error {
 	res, err := h.service.RefreshAccessToken(ctx, refreshToken, ua, ip)
 
 	if err != nil {
-		log.Println("Error refreshing access token:", err)
+		advisor.Error("error_refreshing_access_token", err)
 		return network.FailFromError(c, err)
 	}
 
-	log.Println("--- refreshed jwt for client -----")
-	log.Println("[HandleRefreshTokenRequest] new jwt = ", res.AccessToken)
-	log.Println("[HandleRefreshTokenRequest] new refreshToken = ", res.RefreshToken)
+	advisor.Log("--- refreshed jwt for client -----")
+	advisor.Log("[HandleRefreshTokenRequest] new jwt = " + res.AccessToken)
+	advisor.Log("[HandleRefreshTokenRequest] new refreshToken = " + res.RefreshToken)
 
 
 	return network.Success(

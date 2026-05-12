@@ -10,6 +10,9 @@ type ProjectRow struct {
 	StartDate     string    `json:"start_date"`
 	EndDateEst    string    `json:"end_date_est"`
 	EndDateActual string    `json:"end_date_actual"`
+	Price         float64   `json:"price"`
+	Budget 	      float64   `json:"budget"`
+	Note 		string    `json:"note"`
 	IsDeleted     bool      `json:"is_deleted"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
