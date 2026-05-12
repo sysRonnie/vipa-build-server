@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"go-tailwind-test/internal/util/advisor"
+	"go-tailwind-test/internal/util/network"
 	"log"
 	"net/http"
 	"strings"
@@ -22,6 +24,8 @@ func GetClaimsFromContext(ctx echo.Context) (*Claims) {
 func Middleware(next echo.HandlerFunc,) echo.HandlerFunc {
 
 	return func(c echo.Context) error {
+		advisor := advisor.FromContext(c.Request().Context())
+		advisor.Log("authentiation_middleware_engaged" )
 
 		authHeader :=
 			c.Request().Header.Get(
@@ -61,6 +65,9 @@ func Middleware(next echo.HandlerFunc,) echo.HandlerFunc {
 				"AUTH ERROR: malformed bearer token",
 			)
 
+			
+
+			advisor.Error("malformed bearer token", network.ErrInvalidRequest)
 			return c.JSON(
 				http.StatusUnauthorized,
 				map[string]any{
@@ -80,6 +87,10 @@ func Middleware(next echo.HandlerFunc,) echo.HandlerFunc {
 			"AUTH TOKEN:",
 			tokenString,
 		)
+
+		
+
+		advisor.Log("token string extracted from header: " + tokenString)
 
 		claims, err :=
 			ParseAccessToken(

@@ -16,7 +16,29 @@ func NewProjectStore(db *sql.DB) *Store {
 
 type ProjectStore interface {
 	QueryProjectList(ctx context.Context) ([]ProjectRow, error)
+	QueryProjectByID(ctx context.Context, id int) (*ProjectRow, error)
 	InsertProject(ctx context.Context, newProject ProjectRow) error
+}
+
+func (s *Store) QueryProjectByID(ctx context.Context, id int) (*ProjectRow, error) {
+	row := s.db.QueryRowContext(ctx, baseProjectByIDQuery, id)
+	
+	var project ProjectRow
+	err := row.Scan(
+		&project.ID,
+		&project.CustomerName,
+		&project.Name,
+		&project.StartDate,
+		&project.EndDateEst,
+		&project.EndDateActual,
+		&project.IsDeleted,
+		&project.CreatedAt,
+		&project.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &project, nil
 }
 
 func (s *Store) InsertProject(ctx context.Context, newProject ProjectRow) error {

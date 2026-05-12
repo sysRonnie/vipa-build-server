@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"go-tailwind-test/internal/services/auth"
+	"go-tailwind-test/internal/util/advisor"
 
 	"github.com/google/uuid"
 )
@@ -151,11 +152,17 @@ func (s *Store) ValidateRefreshToken(
 	ctx context.Context,
 	refreshToken string,
 ) (*auth.AuthSession, error) {
-
+	advisor := advisor.FromContext(ctx)
+	advisor.Log("validating refresh token in store")
 	refreshTokenHash :=
 		auth.HashRefreshToken(
 			refreshToken,
 		)
+	
+	advisor.Log("refresh token: " + refreshToken)
+	advisor.Log("refresh token hash generated: " + refreshTokenHash)
+	
+	
 
 	var session auth.AuthSession
 

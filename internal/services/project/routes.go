@@ -5,6 +5,7 @@ import (
 	"go-tailwind-test/internal/util/advisor"
 	"go-tailwind-test/internal/util/network"
 	"log"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -24,7 +25,33 @@ func NewProjectHandler(service ProjectService, store ProjectStore) *Handler{
 
 func (h *Handler) RegisterProjectRoutes(g *echo.Group) {
 	g.GET("/project-read", h.GetProjectList, auth.Middleware)
+	g.GET("/project-read-by-id/:id", h.GetProjectByID, auth.Middleware)
 	g.POST("/project-create", h.InsertProject, auth.Middleware)
+}
+
+func (h *Handler) GetProjectByID(c echo.Context) error {
+	advisor := advisor.FromContext(c.Request().Context())
+	advisor.Log("Processing get project by ID request")
+	
+	idParam := c.Param("id")
+	if idParam == "" {
+		advisor.Error("missing project ID in request path", network.ErrInvalidRequest)
+		return network.FailFromError(c, network.ErrInvalidRequest)
+	}
+	
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		advisor.Error("invalid project ID format: ", err)
+		return network.FailFromError(c, network.ErrInvalidRequest)
+	}
+	
+	project, err := h.store.QueryProjectByID(c.Request().Context(), id)
+	if err != nil {
+		advisor.Error("failed to query project by ID from the database: ", err)
+		return network.FailFromError(c, network.ErrDatabaseFailure)
+	}
+	
+	return network.BuildSuccessResponse(c, project)
 }
 
 func (h *Handler) InsertProject(c echo.Context) error {
