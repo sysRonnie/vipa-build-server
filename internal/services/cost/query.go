@@ -1,0 +1,61 @@
+package cost
+
+
+var baseCostListQuery = `
+SELECT 
+	A.ID,
+	A.COST_CATEGORY_PARENT,
+	A.COST_CATEGORY_CHILD,
+	A.FLAG_IS_DELETED,
+	A.CREATED_AT,
+	A.UPDATED_AT
+FROM MASTER_COST_CATEGORY A
+WHERE 1=1
+`	
+
+func buildCostListQuery() string {
+	return baseCostListQuery + " AND A.FLAG_IS_DELETED = FALSE"
+}
+
+func buildCostListRecycledQuery() string {
+	return baseCostListQuery + " AND A.FLAG_IS_DELETED = TRUE"
+}
+
+
+var baseCostInsert = `
+INSERT INTO MASTER_COST_CATEGORY (
+	COST_CATEGORY_PARENT,
+	COST_CATEGORY_CHILD
+) VALUES ($1, $2)
+
+`
+
+var baseCostByIDQuery = `
+SELECT 
+	A.ID,
+	A.COST_CATEGORY_PARENT,
+	A.COST_CATEGORY_CHILD,
+	A.FLAG_IS_DELETED,
+	A.CREATED_AT,
+	A.UPDATED_AT
+FROM MASTER_COST_CATEGORY A
+WHERE A.ID = $1 
+`
+
+
+var baseCostDelete = `
+UPDATE MASTER_COST_CATEGORY
+SET FLAG_IS_DELETED = TRUE, UPDATED_AT = NOW()
+WHERE ID = $1
+`
+
+var baseCostUpdate = `
+UPDATE MASTER_COST_CATEGORY
+SET
+	COST_CATEGORY_PARENT = $1,
+	COST_CATEGORY_CHILD = $2,
+	UPDATED_AT = NOW(),
+	FLAG_IS_DELETED = false
+WHERE ID = $3
+`
+

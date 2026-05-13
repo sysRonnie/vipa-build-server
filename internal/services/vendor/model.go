@@ -63,6 +63,10 @@ func ScanVendorRows(rows *sql.Rows) ([]VendorRow, error) {
 		return nil, err
 	}
 
+	if len(vendors) == 0 {
+		return []VendorRow{}, nil
+	}
+
 	return vendors, nil
 }
 

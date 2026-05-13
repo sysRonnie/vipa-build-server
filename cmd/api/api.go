@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"go-tailwind-test/internal/services/cost"
 	"go-tailwind-test/internal/services/customer"
 	"go-tailwind-test/internal/services/project"
 	"go-tailwind-test/internal/services/user"
@@ -43,6 +44,11 @@ func (s *API) APIService(e *echo.Echo) error {
 	vendorService := vendor.NewVendorService(vendorStore)
 	vendorHandler := vendor.NewVendorHandler(vendorService, vendorStore)
 	vendorHandler.RegisterVendorRoutes(v1)
+
+	costStore := cost.NewCostStore(s.db)
+	costService := cost.NewCostService(costStore)
+	costHandler := cost.NewCostHandler(costService, costStore)
+	costHandler.RegisterCostRoutes(v1)
 	
 	return nil
 }

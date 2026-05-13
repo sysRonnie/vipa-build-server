@@ -33,6 +33,11 @@ var (
 		Message:    "Internal server error",
 		StatusCode: 500,
 	}
+	ErrRecordExists = &errs.AppError{
+		Code:       "RECORD_EXISTS",
+		Message:    "Record already exists in your recycle bin",
+		StatusCode: 409,
+	}
 
 )
 
