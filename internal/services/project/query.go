@@ -28,6 +28,14 @@ func buildProjectListRecycledQuery() string {
 	return baseProjectListQuery + " AND A.FLAG_IS_DELETED = TRUE"
 }
 
+var baseProjectListNamesQuery = `
+SELECT DISTINCT 
+	A.PROJECT_NAME
+FROM MASTER_PROJECT_LIST A
+WHERE A.FLAG_IS_DELETED = FALSE
+ORDER BY A.PROJECT_NAME
+`
+
 
 var baseProjectInsert = `
 INSERT INTO MASTER_PROJECT_LIST (

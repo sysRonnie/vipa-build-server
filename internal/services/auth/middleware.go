@@ -3,10 +3,8 @@ package auth
 import (
 	"go-tailwind-test/internal/util/advisor"
 	"go-tailwind-test/internal/util/network"
-	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -32,16 +30,10 @@ func Middleware(next echo.HandlerFunc,) echo.HandlerFunc {
 				"Authorization",
 			)
 
-		log.Println(
-			"AUTH HEADER:",
-			authHeader,
-		)
 
 		if authHeader == "" {
 
-			log.Println(
-				"AUTH ERROR: missing authorization header",
-			)
+			advisor.Error("missing authorization header", network.ErrInvalidRequest)
 
 			return c.JSON(
 				http.StatusUnauthorized,
@@ -61,9 +53,6 @@ func Middleware(next echo.HandlerFunc,) echo.HandlerFunc {
 
 		if len(splitToken) != 2 {
 
-			log.Println(
-				"AUTH ERROR: malformed bearer token",
-			)
 
 			
 
@@ -78,15 +67,8 @@ func Middleware(next echo.HandlerFunc,) echo.HandlerFunc {
 			)
 		}
 
-		tokenString :=
-			strings.TrimSpace(
-				splitToken[1],
-			)
+		tokenString := strings.TrimSpace(splitToken[1])
 
-		log.Println(
-			"AUTH TOKEN:",
-			tokenString,
-		)
 
 		
 
@@ -99,14 +81,8 @@ func Middleware(next echo.HandlerFunc,) echo.HandlerFunc {
 
 		if err != nil {
 
-			log.Println(
-				"AUTH ERROR: invalid or expired token",
-			)
+			advisor.Error("invalid or expired token", network.ErrInvalidRequest)
 
-			log.Println(
-				"TOKEN PARSE ERROR:",
-				err,
-			)
 
 			return c.JSON(
 				http.StatusUnauthorized,
@@ -118,27 +94,6 @@ func Middleware(next echo.HandlerFunc,) echo.HandlerFunc {
 			)
 		}
 
-		log.Println(
-			"TOKEN ISSUED AT:",
-			claims.IssuedAt.Time.UTC(),
-		)
-
-		log.Println(
-			"TOKEN EXPIRES:",
-			claims.ExpiresAt.Time.UTC(),
-		)
-
-		log.Println(
-			"CURRENT UTC TIME:",
-			time.Now().UTC(),
-		)
-
-		log.Println(
-			"TOKEN EXPIRED:",
-			time.Now().UTC().After(
-				claims.ExpiresAt.Time.UTC(),
-			),
-		)
 
 		c.Set(
 			string(ClaimsContextKey),

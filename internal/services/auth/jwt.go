@@ -3,7 +3,6 @@ package auth
 import (
 	"errors"
 	"go-tailwind-test/internal/config"
-	"log"
 	"os"
 	"time"
 
@@ -40,10 +39,6 @@ func GenerateAccessToken(
 		jwt.SigningMethodHS256,
 		claims,
 	)
-
-	log.Println("[GenerateAccessToken] jwt token = ", token)
-	log.Println("[GenerateAccessToken] jwt expiration time = ",jwt.NewNumericDate(
-				now.Add(time.Duration(cfg.JWTExpirationMinutes) * time.Minute) ))
 
 	signedToken, err := token.SignedString(
 		[]byte(os.Getenv("JWT_SECRET")),

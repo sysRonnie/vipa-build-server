@@ -21,3 +21,7 @@ type ProjectRow struct {
 type ProjectRowList struct {
 	Projects []ProjectRow `json:"projects"`
 }
+
+type ProjectNameList struct {
+	Names []string `json:"names"`
+}

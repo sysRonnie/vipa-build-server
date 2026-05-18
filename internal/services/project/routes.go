@@ -25,6 +25,7 @@ func NewProjectHandler(service ProjectService, store ProjectStore) *Handler{
 func (h *Handler) RegisterProjectRoutes(g *echo.Group) {
 	g.POST("/project-create", h.InsertProject, auth.Middleware)
 	g.GET("/project-read", h.GetProjectList, auth.Middleware)
+	g.GET("/project-read-names", h.GetProjectListNames, auth.Middleware)  
 	g.GET("/project-read-recycled", h.GetProjectListRecycled, auth.Middleware)
 	g.GET("/project-read-by-id/:id", h.GetProjectByID, auth.Middleware)
 	g.POST("/project-update", h.UpdateProject, auth.Middleware)
@@ -154,6 +155,20 @@ func (h *Handler) GetProjectList(c echo.Context) error {
 
 	return network.BuildSuccessResponse(c, ProjectRowList{
 		Projects: projects,
+	})
+}
+
+func (h *Handler) GetProjectListNames(c echo.Context) error {
+	advisor := advisor.FromContext(c.Request().Context())
+	advisor.Log("Processing get project list names request")
+	projectNames, err := h.store.QueryProjectListNames(c.Request().Context())
+	if err != nil {
+		advisor.Error("failed to query project list names from the database: ", err)
+		return network.FailFromError(c, err)
+	}
+	
+	return network.BuildSuccessResponse(c, ProjectNameList{
+		Names: projectNames,
 	})
 }
 

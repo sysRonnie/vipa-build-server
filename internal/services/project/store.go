@@ -23,7 +23,35 @@ type ProjectStore interface {
 	InsertProject(ctx context.Context, newProject ProjectRow) error
 	UpdateProject(ctx context.Context, updatedProject ProjectRow) (error)
 	DeleteProject(ctx context.Context, id int) error
+	QueryProjectListNames(ctx context.Context) ([]string, error)
 }
+
+func (s *Store) QueryProjectListNames(ctx context.Context) ([]string, error) {
+	rows, err := s.db.QueryContext(ctx, baseProjectListNamesQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	
+	var names []string
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+		names = append(names, name)
+	}
+	
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(names) == 0 {
+		return []string{}, nil
+	}
+	return names, nil
+}
+
 
 func (s *Store) DeleteProject(ctx context.Context, id int) error {
 	_, err := s.db.ExecContext(ctx, baseProjectDelete, id)
