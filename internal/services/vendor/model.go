@@ -3,7 +3,7 @@ package vendor
 import "database/sql"
 
 type VendorRow struct {
-	ID             int    `json:"id" validate:"required"`
+	ID             int    `json:"id"`
 	Name           string `json:"name"`
 	PrimaryContact string `json:"primary_contact"`
 	Phone          string `json:"phone"`
@@ -21,6 +21,10 @@ type VendorRow struct {
 
 type VendorRowList struct {
 	Vendors []VendorRow `json:"vendors"`
+}
+
+type VendorNameList struct {
+	Names []string `json:"names"`
 }
 
 func (v *VendorRow) Scan(scanner interface {

@@ -12,10 +12,11 @@ import (
 type Handler struct {
 	service EventService
 	store  EventStore
+	controller EventController
 }
 
-func NewEventHandler(service EventService, store EventStore) *Handler {
-	return &Handler{service: service, store: store}
+func NewEventHandler(service EventService, store EventStore, controller EventController) *Handler {
+	return &Handler{service: service, store: store, controller: controller}
 }
 
 func (h *Handler) RegisterEventRoutes(g *echo.Group) {
@@ -26,6 +27,18 @@ func (h *Handler) RegisterEventRoutes(g *echo.Group) {
 	g.POST("/event-create", h.InsertEvent, auth.Middleware)
 	g.POST("/event-update", h.UpdateEvent, auth.Middleware)
 	g.POST("/event-delete", h.DeleteEvent, auth.Middleware)
+
+
+	g.POST("/event-activity-create", h.InsertEventActivity, auth.Middleware)
+}
+
+func (h *Handler) InsertEventActivity(c echo.Context) error {
+	res, err := h.controller.CreateEventActivity(c)
+	if err != nil {
+		return network.FailFromError(c, err)
+	}
+
+	return network.BuildSuccessResponse(c, res)
 }
 
 func (h *Handler) GetEventListNames(c echo.Context) error {

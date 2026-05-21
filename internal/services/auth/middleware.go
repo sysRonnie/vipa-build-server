@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"context"
+	"errors"
 	"go-tailwind-test/internal/util/advisor"
 	"go-tailwind-test/internal/util/network"
 	"net/http"
@@ -17,6 +19,22 @@ func GetClaimsFromContext(ctx echo.Context) (*Claims) {
 	claims  := ctx.Get(string(ClaimsContextKey)).(*Claims)
 
 	return claims
+}
+func GetAdvisorClaims(c echo.Context) (*advisor.Advisor, context.Context) {
+	ctx := c.Request().Context()
+	advisor := advisor.FromContext(ctx)
+
+	return advisor, ctx
+}
+
+func GetClaims(ctx context.Context) (*Claims, error) {
+	claims, ok := ctx.Value(ClaimsContextKey).(*Claims)
+
+	if !ok || claims == nil {
+		return nil, errors.New("claims not found in context")
+	}
+
+	return claims, nil
 }
 
 func Middleware(next echo.HandlerFunc,) echo.HandlerFunc {
@@ -95,11 +113,22 @@ func Middleware(next echo.HandlerFunc,) echo.HandlerFunc {
 		}
 
 
-		c.Set(
-			string(ClaimsContextKey),
+
+		ctx := context.WithValue(
+			c.Request().Context(),
+			ClaimsContextKey,
 			claims,
 		)
 
-		return next(c)
-	}
+		c.SetRequest(
+			c.Request().WithContext(ctx),
+		)
+
+		c.Set(
+			string(ClaimsContextKey),
+			claims,
+		)	
+
+			return next(c)
+		}
 }

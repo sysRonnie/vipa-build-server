@@ -10,6 +10,18 @@ type EventRow struct {
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 }
+type EventActivityRow struct {
+	ID        int    `json:"id"`
+	ProjectName string `json:"project_name"`
+	EventType string `json:"event_type"`
+	EventTitle string `json:"event_title"`
+	EventDesc string `json:"event_desc"`
+	EventDate string `json:"event_date"`
+	EventCompleted bool   `json:"event_completed"`
+	IsDeleted bool   `json:"is_deleted"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+}
 
 
 type EventRowList struct {

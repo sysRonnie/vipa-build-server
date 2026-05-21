@@ -11,3 +11,4 @@ type Claims struct {
 	SessionID  uuid.UUID `json:"session_id"`
 	jwt.RegisteredClaims
 }
+

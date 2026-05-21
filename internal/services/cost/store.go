@@ -19,11 +19,38 @@ func NewCostStore(db *sql.DB) *Store {
 
 type CostStore interface {
 	QueryCostList(ctx context.Context) ([]CostRow, error)
+	QueryCostListNames(ctx context.Context) (CostNameList, error)
 	QueryCostListRecycled(ctx context.Context) ([]CostRow, error)
 	QueryCostByID(ctx context.Context, id int) (*CostRow, error)
 	InsertCost(ctx context.Context, newCost CostRow) error
 	UpdateCost(ctx context.Context, updatedCost CostRow) error
 	DeleteCost(ctx context.Context, id int) error
+}
+
+func (s *Store) QueryCostListNames(ctx context.Context) (CostNameList, error) {
+	rows, err := s.db.QueryContext(ctx, baseCostListNamesQuery)
+	if err != nil {
+		return CostNameList{}, err
+	}
+	defer rows.Close()
+	
+	var names CostNameList
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return CostNameList{}, err
+		}
+		names.Names = append(names.Names, name)
+	}
+	
+	if err := rows.Err(); err != nil {
+		return CostNameList{}, err
+	}
+	if len(names.Names) == 0 {
+		return CostNameList{}, nil
+	}
+	return names, nil
 }
 
 func (s *Store) DeleteCost(ctx context.Context, id int) error {

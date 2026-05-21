@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"go-tailwind-test/internal/services/activity"
 	"go-tailwind-test/internal/services/cost"
 	"go-tailwind-test/internal/services/customer"
 	"go-tailwind-test/internal/services/event"
@@ -53,8 +54,15 @@ func (s *API) APIService(e *echo.Echo) error {
 	
 	eventStore := event.NewEventStore(s.db)
 	eventService := event.NewEventService(eventStore)
-	eventHandler := event.NewEventHandler(eventService, eventStore)
+	eventController := event.NewEventController(eventService)
+	eventHandler := event.NewEventHandler(eventService, eventStore, eventController)
 	eventHandler.RegisterEventRoutes(v1)
+
+	activityStore := activity.NewActivityStore(s.db)
+	activityService := activity.NewActivityService(activityStore)
+	activityController := activity.NewActivityController(activityService)
+	activityHandler := activity.NewActivityHandler(activityController, activityService, activityStore)
+	activityHandler.RegisterActivityRoutes(v1)
 
 	return nil
 }

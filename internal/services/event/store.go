@@ -25,6 +25,49 @@ type EventStore interface {
 	InsertEvent(ctx context.Context, newEvent EventRow) error
 	UpdateEvent(ctx context.Context, updatedEvent EventRow) error
 	DeleteEvent(ctx context.Context, id int) error
+
+	InsertEventActivity(ctx context.Context, email string, newEventActivity EventActivityRow) error
+}
+
+func nullableText(s string) interface{} {
+	if s == "" {
+		return nil
+	}
+	return s
+}
+
+func nullableDate(s string) interface{} {
+	if s == "" {
+		return nil
+	}
+	return s
+}
+
+func (s *Store) InsertEventActivity(ctx context.Context, email string, newEventActivity EventActivityRow) error {
+	advisor := advisor.FromContext(ctx)
+
+	_, err := s.db.ExecContext(
+		ctx,
+		baseEventActivityInsert,
+		email,
+		newEventActivity.ProjectName,
+		newEventActivity.EventTitle,
+		nullableText(newEventActivity.EventDesc),
+		nullableDate(newEventActivity.EventDate),
+		newEventActivity.EventType,
+		newEventActivity.EventCompleted,
+	)
+
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			advisor.Log("Attempted to insert duplicate event activity with project name: " + newEventActivity.ProjectName + " and event type: " + newEventActivity.EventType)
+			return network.ErrRecordExists
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 func (s *Store) QueryEventListNames(ctx context.Context) ([]string, error) {

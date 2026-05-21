@@ -24,10 +24,26 @@ func NewVendorHandler(service VendorService, store VendorStore) *Handler {
 func (h *Handler) RegisterVendorRoutes(g *echo.Group) {
 	g.POST("/vendor-create", h.InsertVendor, auth.Middleware)
 	g.GET("/vendor-read", h.GetVendorList, auth.Middleware)	
+	g.GET("/vendor-read-names", h.GetVendorListNames, auth.Middleware)
 	g.GET("/vendor-read-by-id/:id", h.GetVendorByID, auth.Middleware)
 	g.GET("/vendor-read-recycled", h.GetVendorListRecycled, auth.Middleware)
 	g.POST("/vendor-update", h.UpdateVendor, auth.Middleware)
 	g.POST("/vendor-delete", h.DeleteVendor, auth.Middleware)
+}
+
+func (h *Handler) GetVendorListNames(c echo.Context) error {
+	advisor := advisor.FromContext(c.Request().Context())
+	advisor.Log("Processing get vendor list names request")
+
+	vendorNames, err := h.store.QueryVendorListNames(c.Request().Context())
+	if err != nil {
+		advisor.Error("failed to query vendor list names from the database: ", err)
+		return network.FailFromError(c, network.ErrDatabaseFailure)
+	}
+
+	advisor.Log("Successfully queried vendor list names from the database: " + strconv.Itoa(len(vendorNames.Names)) + " names found")
+
+	return network.BuildSuccessResponse(c, vendorNames)
 }
 
 

@@ -16,6 +16,10 @@ type CostRowList struct {
 	Costs []CostRow `json:"costs"`
 }
 
+type CostNameList struct {
+	Names []string `json:"names"`
+}
+
 func (v *CostRow) Scan(scanner interface {
 	Scan(dest ...any) error
 }) error {

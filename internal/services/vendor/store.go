@@ -16,11 +16,40 @@ func NewVendorStore(db *sql.DB) *Store {
 
 type VendorStore interface {
 	QueryVendorList(ctx context.Context) ([]VendorRow, error)
+	QueryVendorListNames(ctx context.Context) (VendorNameList, error)
 	QueryVendorListRecycled(ctx context.Context) ([]VendorRow, error)
 	QueryVendorByID(ctx context.Context, id int) (*VendorRow, error)
 	InsertVendor(ctx context.Context, newVendor VendorRow) error
 	UpdateVendor(ctx context.Context, updatedVendor VendorRow) error
 	DeleteVendor(ctx context.Context, id int) error
+}
+
+func (s *Store) QueryVendorListNames(ctx context.Context) (VendorNameList, error) {
+	rows, err := s.db.QueryContext(ctx, baseVendorListNamesQuery)
+	if err != nil {
+		return VendorNameList{}, err
+	}
+	defer rows.Close()
+
+	names := VendorNameList{
+		Names: []string{},
+	}
+
+	for rows.Next() {
+		var name string
+
+		if err := rows.Scan(&name); err != nil {
+			return VendorNameList{}, err
+		}
+
+		names.Names = append(names.Names, name)
+	}
+
+	if err := rows.Err(); err != nil {
+		return VendorNameList{}, err
+	}
+
+	return names, nil
 }
 
 

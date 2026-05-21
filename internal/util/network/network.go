@@ -102,6 +102,8 @@ func Success(c echo.Context, template SandboxResponse, payload ...any) error {
 	return Respond(c, template)
 }
 
+type EmptyResponse struct{}
+
 func Fail(c echo.Context, template SandboxResponse, customMessage ...string) error {
 	if len(customMessage) > 0 {
 		template.Message = customMessage[0]

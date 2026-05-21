@@ -90,3 +90,10 @@ SET
 	FLAG_IS_DELETED = false
 WHERE ID = $11
 `
+
+
+var baseVendorListNamesQuery = `
+SELECT DISTINCT 
+	A.VENDOR_NAME
+FROM MASTER_VENDOR_LIST A
+`

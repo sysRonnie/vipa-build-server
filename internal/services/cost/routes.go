@@ -20,11 +20,26 @@ func NewCostHandler(service CostService, store CostStore) *Handler {
 
 func (h *Handler) RegisterCostRoutes(g *echo.Group) {
 	g.GET("/cost-read", h.GetCostList, auth.Middleware)
+	g.GET("/cost-read-names", h.GetCostListNames, auth.Middleware)
 	g.GET("/cost-read-recycled", h.GetCostListRecycled, auth.Middleware)
 	g.GET("/cost-read-by-id/:id", h.GetCostByID, auth.Middleware)
 	g.POST("/cost-create", h.InsertCost, auth.Middleware)
 	g.POST("/cost-update", h.UpdateCost, auth.Middleware)
 	g.POST("/cost-delete", h.DeleteCost, auth.Middleware)
+}
+
+func (h *Handler) GetCostListNames(c echo.Context) error {
+	advisor := advisor.FromContext(c.Request().Context())
+	advisor.Log("Processing get cost list names request")
+	
+	costNames, err := h.store.QueryCostListNames(c.Request().Context())
+	if err != nil {
+		advisor.Error("failed to query cost list names from the database: ", err)
+		return network.FailFromError(c, network.ErrDatabaseFailure)
+	}
+
+
+	return network.BuildSuccessResponse(c, costNames)
 }
 
 func (h *Handler) GetCostByID(c echo.Context) error {
