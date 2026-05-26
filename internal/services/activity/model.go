@@ -32,6 +32,9 @@ type ActivityRow struct {
 	CostCategoryID *int `json:"cost_category_id,omitempty"`
 	CostCategoryName *string `json:"cost_category_name,omitempty"`
 
+	IncomeCategoryID   *int    `json:"income_category_id,omitempty"`
+	IncomeCategoryName *string `json:"income_category_name,omitempty"`
+
 	VendorID *int `json:"vendor_id,omitempty"`
 	VendorName *string `json:"vendor_name,omitempty"`
 
@@ -63,4 +66,12 @@ type ExpenseActivityRow struct {
 	Amount float64 `json:"amount" validate:"required"`
 	ExpenseDate string `json:"expense_date" validate:"required"`
 	PhotoURL *string `json:"photo_url"`
+}
+
+type ActivityDropdownData struct {
+	Projects []string `json:"projects"`
+	Vendors  []string `json:"vendors"`
+	Costs    []string `json:"costs"`
+	Events   []string `json:"events"`
+	Income   []string `json:"income"`
 }

@@ -6,6 +6,7 @@ import (
 	"go-tailwind-test/internal/services/cost"
 	"go-tailwind-test/internal/services/customer"
 	"go-tailwind-test/internal/services/event"
+	"go-tailwind-test/internal/services/note"
 	"go-tailwind-test/internal/services/project"
 	"go-tailwind-test/internal/services/user"
 	"go-tailwind-test/internal/services/vendor"
@@ -63,6 +64,12 @@ func (s *API) APIService(e *echo.Echo) error {
 	activityController := activity.NewActivityController(activityService)
 	activityHandler := activity.NewActivityHandler(activityController, activityService, activityStore)
 	activityHandler.RegisterActivityRoutes(v1)
+
+	noteStore := note.NewNoteStore(s.db)
+	noteService := note.NewNoteService(noteStore)
+	noteController := note.NewNoteController(noteService)
+	noteHandler := note.NewNoteHandler(noteController)
+	noteHandler.RegisterNoteRoutes(v1)
 
 	return nil
 }

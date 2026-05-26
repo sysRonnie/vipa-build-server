@@ -27,24 +27,41 @@ type ActivityController interface {
 	ControllerDeleteActivitySoft(c echo.Context) error
 	ControllerDeleteActivityErase(c echo.Context) error
 	CreateActivity(ctx context.Context, activity ActivityRow) error
-	UpdateActivity(ctx context.Context, activity ActivityRow) error
+	UpdateActivity(ctx context.Context, activity ActivityRow) (*ActivityRow, error)
+	GetActivityDropdownData(c echo.Context) (*ActivityDropdownData, error)
 }
 
-func (ctr *Controller) UpdateActivity(ctx context.Context, activity ActivityRow) error {
+func (ctr *Controller) GetActivityDropdownData(c echo.Context) (*ActivityDropdownData, error) {
+	advisor, ctx := auth.GetAdvisorClaims(c)
+	
+	advisor.Log("controller_attached_get_activity_dropdown_data")
+
+	data, err := ctr.service.GetActivityDropdownData(ctx)
+	if err != nil {
+		advisor.Error("failed to get activity dropdown data", err)
+		return nil, err
+	}
+	
+	return data, nil
+}
+
+
+func (ctr *Controller) UpdateActivity(ctx context.Context, activity ActivityRow) (*ActivityRow, error) {
 	advisor := advisor.FromContext(ctx)
 	advisor.Log("controller_update_activity")
 	
 	if err := activity.ValidateForCreate(); err != nil {
 		advisor.Error("activity validation failed", err)
-		return err
+		return nil, err
 	}
 
-	if err := ctr.service.UpdateActivity(ctx, activity); err != nil {
+	updatedActivity, err := ctr.service.UpdateActivity(ctx, activity)
+	if err != nil {
 		advisor.Error("failed to update activity", err)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return updatedActivity, nil
 }
 
 func (ctr *Controller) CreateActivity(ctx context.Context, activity ActivityRow) error {

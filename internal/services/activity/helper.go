@@ -3,6 +3,29 @@ package activity
 
 import "strings"
 
+func ValidateFormIncome(activity ActivityRow) error {
+	if activity.ProjectName == nil || strings.TrimSpace(*activity.ProjectName) == "" {
+		return ErrProjectNameRequired
+	}
+
+	if activity.IncomeCategoryName == nil || strings.TrimSpace(*activity.IncomeCategoryName) == "" {
+		return ErrIncomeCategoryRequired
+	}
+
+	if activity.Amount == nil || *activity.Amount <= 0 {
+		return ErrAmountInvalid
+	}
+
+	if activity.ActivityDate == nil || strings.TrimSpace(*activity.ActivityDate) == "" {
+		return ErrDateRequired
+	}
+
+	if strings.TrimSpace(activity.ActivityTitle) == "" {
+		return ErrIncomeTitleRequired
+	}
+
+	return nil
+}
 func ValidateFormExpense(activity ActivityRow) error {
 	if activity.ProjectName == nil || strings.TrimSpace(*activity.ProjectName) == "" {
 		return ErrProjectNameRequired
@@ -52,7 +75,7 @@ func (a ActivityRow) ValidateForCreate() error {
 		return ValidateFormExpense(a)
 
 	case string(ACTIVITY_TYPE_INCOME):
-		return ErrNotFound
+		return ValidateFormIncome(a)
 
 	default:
 		return ErrInvalidActivityType

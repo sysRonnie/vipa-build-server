@@ -27,25 +27,72 @@ type ActivityService interface {
 	DeleteActivitySoft(ctx context.Context, id int) error
 	DeleteActivityErase(ctx context.Context, id int) error
 	CreateActivity(ctx context.Context, newActivity ActivityRow) error
-	UpdateActivity(ctx context.Context, updatedActivity ActivityRow) error
+	UpdateActivity(ctx context.Context, updatedActivity ActivityRow) (*ActivityRow, error)
+	GetActivityDropdownData(ctx context.Context) (*ActivityDropdownData, error)
 }
 
-func (s *Service) UpdateActivity(ctx context.Context, updatedActivity ActivityRow) error {
+func (s *Service) GetActivityDropdownData(ctx context.Context) (*ActivityDropdownData, error) {
+	advisor := advisor.FromContext(ctx)
+	advisor.Log("service_attached_get_activity_dropdown_data")
+
+	projectList, err := s.store.QueryProjectList(ctx)
+	if err != nil {
+		advisor.Error("failed to get project list names", err)
+		return nil, err
+	}
+
+	eventCategories, err := s.store.QueryEventCategoryList(ctx)
+	if err != nil {
+		advisor.Error("failed to get event category list names", err)
+		return nil, err
+	}
+	
+	costCategories, err := s.store.QueryCostCategoryList(ctx)
+	if err != nil {
+		advisor.Error("failed to get cost category list names", err)
+		return nil, err
+	}
+	
+	vendors, err := s.store.QueryVendorList(ctx)
+	if err != nil {
+		advisor.Error("failed to get vendor list names", err)
+		return nil, err
+	}
+
+	incomeList, err := s.store.QueryIncomeCategoryList(ctx)
+	if err != nil {
+		advisor.Error("failed to get income category list names", err)
+		return nil, err
+	}
+	
+	data := &ActivityDropdownData{
+		Projects:     projectList,
+		Vendors:         vendors,
+		Costs:  costCategories,
+		Events: eventCategories,
+		Income: incomeList,
+	}
+	
+	
+	return data, nil
+}
+
+func (s *Service) UpdateActivity(ctx context.Context, updatedActivity ActivityRow) (*ActivityRow, error) {
 	advisor := advisor.FromContext(ctx)
 	advisor.Log("service_attached_update_activity" + strconv.Itoa(updatedActivity.ID))
 	
 	claims, err := auth.GetClaims(ctx)
 	if err != nil {
 		advisor.Error("failed to get claims", err)
-		return err
+		return nil, err
 	}
 
-	err = s.store.UpdateActivity(ctx, claims.UserEmail, updatedActivity)
+	updatedRow, err := s.store.UpdateActivity(ctx, claims.UserEmail, updatedActivity)
 	if err != nil {
 		advisor.Error("failed to update activity", err)
-		return err
+		return nil, err
 	}
-	return nil
+	return updatedRow, nil
 }
 
 

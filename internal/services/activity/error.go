@@ -7,6 +7,18 @@ import errs "go-tailwind-test/internal/util/err"
 
 var (
 
+	ErrIncomeCategoryRequired = &errs.AppError{
+		Code: "INCOME_CATEGORY_REQUIRED",
+		Message: "Income category is required",
+		StatusCode: 400,
+	}
+
+	ErrIncomeTitleRequired = &errs.AppError{
+		Code: "INCOME_TITLE_REQUIRED",
+		Message: "Income title is required",
+		StatusCode: 400,
+	}
+
 	ErrInvalidActivityType = &errs.AppError{
 		Code: "INVALID_ACTIVITY_TYPE",
 		Message: "Invalid activity type",

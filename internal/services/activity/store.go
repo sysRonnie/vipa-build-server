@@ -3,6 +3,7 @@ package activity
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"go-tailwind-test/internal/util/advisor"
 	"strconv"
 )
@@ -27,14 +28,152 @@ type ActivityStore interface {
 	InsertActivityExpense(ctx context.Context, email string, newActivity ExpenseActivityRow) error
 	UpdateActivityExpense(ctx context.Context, email string, updatedActivity ExpenseActivityRow) error
 	InsertActivity(ctx context.Context, email string, newActivity ActivityRow) error
-	UpdateActivity(ctx context.Context, email string, updatedActivity ActivityRow) error
+	UpdateActivity(ctx context.Context, email string, updatedActivity ActivityRow) (*ActivityRow, error)
+
+	QueryProjectList(ctx context.Context) ([]string, error)
+	QueryVendorList(ctx context.Context) ([]string, error)
+	QueryEventCategoryList(ctx context.Context) ([]string, error)
+	QueryCostCategoryList(ctx context.Context) ([]string, error)
+	QueryIncomeCategoryList(ctx context.Context) ([]string, error)
 }
 
-func (s *Store) UpdateActivity(ctx context.Context, email string, updatedActivity ActivityRow) error {
-	advisor := advisor.FromContext(ctx)
-	advisor.Log("store_attached_update_activity" + strconv.Itoa(updatedActivity.ID))
+func (s *Store) QueryIncomeCategoryList(ctx context.Context) ([]string, error) {
+	rows, err := s.db.QueryContext(ctx, baseIncomeListQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	
-	_, err := s.db.ExecContext(
+	var incomeCategoryNames []string
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+		incomeCategoryNames = append(incomeCategoryNames, name)
+	}
+	
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(incomeCategoryNames) == 0 {
+		return []string{}, nil
+	}
+	return incomeCategoryNames, nil
+}
+
+func (s *Store) QueryCostCategoryList(ctx context.Context) ([]string, error) {
+	rows, err := s.db.QueryContext(ctx, baseCostListNamesQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	
+	var costCategoryNames []string
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+		costCategoryNames = append(costCategoryNames, name)
+	}
+	
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(costCategoryNames) == 0 {
+		return []string{}, nil
+	}
+	return costCategoryNames, nil
+}
+
+func (s *Store) QueryEventCategoryList(ctx context.Context) ([]string, error) {
+	rows, err := s.db.QueryContext(ctx, baseEventListNamesQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	
+	var eventCategoryNames []string
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+		eventCategoryNames = append(eventCategoryNames, name)
+	}
+	
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(eventCategoryNames) == 0 {
+		return []string{}, nil
+	}
+	return eventCategoryNames, nil
+}
+
+func (s *Store) QueryVendorList(ctx context.Context) ([]string, error) {
+	rows, err := s.db.QueryContext(ctx, baseVendorListNamesQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	
+	var vendorNames []string
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+		vendorNames = append(vendorNames, name)
+	}
+	
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(vendorNames) == 0 {
+		return []string{}, nil
+	}
+	return vendorNames, nil
+}
+
+func (s *Store) QueryProjectList(ctx context.Context) ([]string, error) {
+	rows, err := s.db.QueryContext(ctx, baseProjectListNamesQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	
+	var projectNames []string
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+		projectNames = append(projectNames, name)
+	}
+	
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(projectNames) == 0 {
+		return []string{}, nil
+	}
+	return projectNames, nil
+}
+
+func (s *Store) UpdateActivity(ctx context.Context, email string, updatedActivity ActivityRow) (*ActivityRow, error) {
+	advisor := advisor.FromContext(ctx)
+	advisor.Log("store_attached_update_activity_" + strconv.Itoa(updatedActivity.ID))
+
+	var row ActivityRow
+
+	err := s.db.QueryRowContext(
 		ctx,
 		baseActivityUpdate,
 		email,
@@ -44,25 +183,58 @@ func (s *Store) UpdateActivity(ctx context.Context, email string, updatedActivit
 		updatedActivity.ActivityBody,
 		updatedActivity.Amount,
 		updatedActivity.ActivityDate,
-		
 		updatedActivity.EventCategoryName,
 		updatedActivity.CostCategoryName,
 		updatedActivity.VendorName,
+		updatedActivity.IncomeCategoryName,
 		updatedActivity.PhotoURL,
-		
+		updatedActivity.FlagIsCompleted,
 		updatedActivity.ID,
+	).Scan(
+		&row.ID,
+		&row.UserID,
+		&row.ProjectID,
+		&row.ProjectName,
+		&row.ActivityType,
+		&row.ActivityTitle,
+		&row.ActivityBody,
+		&row.Amount,
+		&row.ActivityDate,
+		&row.EventCategoryID,
+		&row.EventCategoryName,
+		&row.CostCategoryID,
+		&row.CostCategoryName,
+		&row.VendorID,
+		&row.VendorName,
+		&row.IncomeCategoryID,
+		&row.IncomeCategoryName,
+		&row.PhotoURL,
+		&row.PhotoThumbnailURL,
+		&row.FlagIsCompleted,
+		&row.FlagIsDeleted,
+		&row.CreatedAt,
+		&row.UpdatedAt,
 	)
-	
+
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			advisor.Error("no rows affected when updating activity", err)
+			return nil, err
+		}
+
 		advisor.Error("failed to update activity", err)
-		return err
+		return nil, err
 	}
-	return nil
+
+	return &row, nil
 }
 
 func (s *Store) InsertActivity(ctx context.Context, email string, activity ActivityRow) error {
 	advisor := advisor.FromContext(ctx)
 	advisor.Log("store_insert_activity")
+	advisor.Log("activity_project_name= " + *activity.ProjectName)
+
+
 
 	_, err := s.db.ExecContext(
 		ctx,
@@ -77,6 +249,7 @@ func (s *Store) InsertActivity(ctx context.Context, email string, activity Activ
 		activity.EventCategoryName,
 		activity.CostCategoryName,
 		activity.VendorName,
+		activity.IncomeCategoryName,
 		activity.PhotoURL,
 	)
 
@@ -226,6 +399,8 @@ func (s *Store) QueryActivityById(ctx context.Context, id int) (*ActivityRow, er
 			
 			&activity.VendorID,
 			&activity.VendorName,
+			&activity.IncomeCategoryID,
+			&activity.IncomeCategoryName,
 			&activity.PhotoURL,
 			&activity.PhotoThumbnailURL,
 			&activity.FlagIsCompleted,
@@ -360,6 +535,10 @@ func (s *Store) QueryActivityList(ctx context.Context) ([]ActivityRow, error) {
 			
 			&activity.VendorID,
 			&activity.VendorName,
+
+			&activity.IncomeCategoryID,
+			&activity.IncomeCategoryName,
+
 			&activity.PhotoURL,
 			&activity.PhotoThumbnailURL,
 			&activity.FlagIsCompleted,

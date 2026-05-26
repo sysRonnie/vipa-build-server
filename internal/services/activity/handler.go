@@ -27,6 +27,17 @@ func (h *Handler) RegisterActivityRoutes(g *echo.Group) {
 
 	g.POST("/activity-remove", h.RemoveActivitySoft, auth.Middleware)
 	g.POST("/activity-erase", h.RemoveActivityErase, auth.Middleware)
+
+	g.GET("/activity-dropdown-data", h.GetActivityDropdownData, auth.Middleware)
+}
+
+func (h *Handler) GetActivityDropdownData(c echo.Context) error {
+	res, err := h.controller.GetActivityDropdownData(c)
+	if err != nil {
+		return network.FailFromError(c, err)
+	}
+	
+	return network.BuildSuccessResponse(c, res)
 }
 
 func (h *Handler) UpdateActivity(c echo.Context) error {
@@ -36,12 +47,12 @@ func (h *Handler) UpdateActivity(c echo.Context) error {
 		advisor.Error("failed to bind create activity request", err)
 		return network.FailFromError(c, err)
 	}
-	err := h.controller.UpdateActivity(ctx, req)
+	updatedActivity, err := h.controller.UpdateActivity(ctx, req)
 	if err != nil {
 		return network.FailFromError(c, err)
 	}
 	
-	return network.BuildSuccessResponse(c, nil)
+	return network.BuildSuccessResponse(c, updatedActivity)
 }
 
 func (h *Handler) CreateActivity(c echo.Context) error {
