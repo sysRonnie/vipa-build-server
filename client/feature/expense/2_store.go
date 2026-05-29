@@ -23,7 +23,9 @@ type ExpenseStore interface {
 	QueryMasterClientList() ([]ExpenseFormModelClient, error)
 	QueryMasterClientListRowById(id int) (ExpenseFormModelClient, error)
 	CheckClientNameExists(tx *sql.Tx, name string) (bool, error)
+
 }
+
 
 func (s *Store) CheckClientNameExists(tx *sql.Tx, name string) (bool, error) {
 	var exists bool

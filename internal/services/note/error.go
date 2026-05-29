@@ -1,10 +1,29 @@
 package note
 
-import "errors"
+import (
+	errs "go-tailwind-test/internal/util/err"
+)
 
 var (
-	ErrNoteIDRequired = errors.New("note id is required")
-	ErrNoteBodyRequired = errors.New("note body is required")
-	ErrNoteNotFound = errors.New("note not found")
-	ErrProjectNotFound = errors.New("project not found")
-)
+	ErrNoteIDRequired = &errs.AppError{
+		Code: "NOTE_ID_REQUIRED",
+		Message: "Note ID is required",
+		StatusCode: 400,
+	}
+	ErrNoteBodyRequired = &errs.AppError{
+		Code: "NOTE_BODY_REQUIRED",
+		Message: "Note body is required",
+		StatusCode: 400,
+	}
+	ErrNoteNotFound = &errs.AppError{
+		Code: "NOTE_NOT_FOUND",
+		Message: "Note not found",
+		StatusCode: 404,
+	}
+	ErrProjectNotFound = &errs.AppError{
+		Code: "PROJECT_NOT_FOUND",
+		Message: "Project not found",
+		StatusCode: 404,
+	}
+)	
+	

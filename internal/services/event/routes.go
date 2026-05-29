@@ -30,7 +30,23 @@ func (h *Handler) RegisterEventRoutes(g *echo.Group) {
 
 
 	g.POST("/event-activity-create", h.InsertEventActivity, auth.Middleware)
+
+	g.GET("/event-name-latest", h.GetEventNameLatest, auth.Middleware)
 }
+
+func (h *Handler) GetEventNameLatest(c echo.Context) error {
+	advisor := advisor.FromContext(c.Request().Context())
+	advisor.Log("Processing get latest event name request")
+	
+	eventName, err := h.store.QueryEventNameLatest(c.Request().Context())
+	if err != nil {
+		advisor.Error("failed to query latest event name from the database: ", err)
+		return network.FailFromError(c, err)
+	}
+	
+	return network.BuildSuccessResponse(c, eventName)
+}
+
 
 func (h *Handler) InsertEventActivity(c echo.Context) error {
 	res, err := h.controller.CreateEventActivity(c)

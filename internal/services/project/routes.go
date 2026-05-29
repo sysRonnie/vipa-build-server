@@ -30,6 +30,46 @@ func (h *Handler) RegisterProjectRoutes(g *echo.Group) {
 	g.GET("/project-read-by-id/:id", h.GetProjectByID, auth.Middleware)
 	g.POST("/project-update", h.UpdateProject, auth.Middleware)
 	g.POST("/project-delete", h.DeleteProject, auth.Middleware)
+
+	g.GET("/project-expense-list-by-id/:id", h.GetProjectExpenseListByID, auth.Middleware)
+
+	g.GET("/project-name-latest", h.GetProjectNameLatest, auth.Middleware)
+}
+
+func (h *Handler) GetProjectNameLatest(c echo.Context) error {
+	advisor := advisor.FromContext(c.Request().Context())
+	advisor.Log("Processing get latest project name request")
+	
+	projectName, err := h.store.QueryProjectNameLatest(c.Request().Context())
+	if err != nil {
+		advisor.Error("failed to query latest project name from the database: ", err)
+		return network.FailFromError(c, err)
+	}
+	
+	return network.BuildSuccessResponse(c, projectName)
+}
+
+func (h *Handler) GetProjectExpenseListByID(c echo.Context) error {
+	advisor := advisor.FromContext(c.Request().Context())
+	projectIdParam := c.Param("id")
+	if projectIdParam == "" {
+		advisor.Error("missing project ID in request path", network.ErrInvalidRequest)
+		return network.FailFromError(c, network.ErrInvalidRequest)
+	}
+	
+	projectId, err := strconv.Atoi(projectIdParam)
+	if err != nil {
+		advisor.Error("invalid project ID format: ", err)		
+		return network.FailFromError(c, network.ErrInvalidRequest)
+	}
+	
+	expenseList, err := h.store.QueryProjectExpenseListByID(c.Request().Context(), projectId)
+	if err != nil {
+		advisor.Error("failed to query project expense list by ID from the database: ", err)
+		return network.FailFromError(c, network.ErrDatabaseFailure)
+	}
+	
+	return network.BuildSuccessResponse(c, expenseList)
 }
 
 

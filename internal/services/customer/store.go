@@ -23,7 +23,22 @@ type CustomerStore interface {
 	CheckCustomerExists(ctx context.Context, firstName, lastName string) (bool, error)
 	CheckCustomerExistsRecycled(ctx context.Context, firstName, lastName string) (bool, error)
 	QueryCustomerNames(ctx context.Context) ([]string, error)
+	QueryCustomerNameLatest(ctx context.Context) (string, error) // New method for latest customer names
 }
+
+func (s *Store) QueryCustomerNameLatest(ctx context.Context) (string, error) {
+	row := s.db.QueryRowContext(ctx, baseCustomerNamesLatestQuery)
+	
+	var latest string
+	err := row.Scan(&latest)
+	if err != nil {
+		return "", err
+	}
+	
+	return latest, nil
+}
+
+	
 
 func (s *Store) QueryCustomerNames(ctx context.Context) ([]string, error) {
 	rows, err := s.db.QueryContext(ctx, baseCustomerNamesQuery)

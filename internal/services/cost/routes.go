@@ -26,6 +26,21 @@ func (h *Handler) RegisterCostRoutes(g *echo.Group) {
 	g.POST("/cost-create", h.InsertCost, auth.Middleware)
 	g.POST("/cost-update", h.UpdateCost, auth.Middleware)
 	g.POST("/cost-delete", h.DeleteCost, auth.Middleware)
+
+	g.GET("/cost-name-latest", h.GetCostNameLatest, auth.Middleware)
+}
+
+func (h *Handler) GetCostNameLatest(c echo.Context) error {
+	advisor := advisor.FromContext(c.Request().Context())
+	advisor.Log("Processing get latest cost name request")
+	
+	costName, err := h.store.QueryCostNameLatest(c.Request().Context())
+	if err != nil {
+		advisor.Error("failed to query latest cost name from the database: ", err)
+		return network.FailFromError(c, err)
+	}
+	
+	return network.BuildSuccessResponse(c, costName)
 }
 
 func (h *Handler) GetCostListNames(c echo.Context) error {

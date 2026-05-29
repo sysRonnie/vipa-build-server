@@ -21,6 +21,10 @@ type ExpenseService interface {
 	ProcessRemoveRecordRequest(viewType ExpenseViewType, rowId int) error
 }
 
+
+
+
+
 func (s *Service) ProcessRemoveRecordRequest(viewType ExpenseViewType, rowId int) error {
 	log.Println("ProcessRemoveRecordRequest is working now")
 

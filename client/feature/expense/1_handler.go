@@ -1,11 +1,12 @@
 package expense
 
 import (
+	"go-tailwind-test/client/ui"
 	"log"
 	"strconv"
+
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
-	"go-tailwind-test/client/ui"
 )
 
 type Handler struct {
@@ -28,7 +29,10 @@ func (h *Handler) RegisterExpenseRoutes(g *echo.Group) {
 	g.GET("/expense/modal-remove-record/:viewType/:rowId", h.GetModalRemoveRecord)
 	g.POST("/expense/update-record/:viewType/:rowId", h.HandleUpdateRecord)
 	g.POST("/expense/remove-record/:viewType/:rowId", h.HandleRemoveRecord)
+
 }
+
+
 
 func (h *Handler) HandleRemoveRecord(c echo.Context) error {
 	rowId, err := strconv.Atoi(c.Param("rowId"))

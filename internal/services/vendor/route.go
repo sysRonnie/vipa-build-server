@@ -29,6 +29,20 @@ func (h *Handler) RegisterVendorRoutes(g *echo.Group) {
 	g.GET("/vendor-read-recycled", h.GetVendorListRecycled, auth.Middleware)
 	g.POST("/vendor-update", h.UpdateVendor, auth.Middleware)
 	g.POST("/vendor-delete", h.DeleteVendor, auth.Middleware)
+	g.GET("/vendor-name-latest", h.GetVendorNameLatest, auth.Middleware) // New route for latest vendor name
+}
+
+func (h *Handler) GetVendorNameLatest(c echo.Context) error {
+	advisor := advisor.FromContext(c.Request().Context())
+	advisor.Log("Processing get latest vendor name request")
+	
+	vendorName, err := h.store.QueryVendorNameLatest(c.Request().Context())
+	if err != nil {
+		advisor.Error("failed to query latest vendor name from the database: ", err)
+		return network.FailFromError(c, network.ErrDatabaseFailure)
+	}
+	
+	return network.BuildSuccessResponse(c, vendorName)
 }
 
 func (h *Handler) GetVendorListNames(c echo.Context) error {

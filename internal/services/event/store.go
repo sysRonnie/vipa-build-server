@@ -27,7 +27,20 @@ type EventStore interface {
 	DeleteEvent(ctx context.Context, id int) error
 
 	InsertEventActivity(ctx context.Context, email string, newEventActivity EventActivityRow) error
+
+	QueryEventNameLatest(ctx context.Context) (string, error)
 }
+
+func (s *Store) QueryEventNameLatest(ctx context.Context) (string, error) {
+	row := s.db.QueryRowContext(ctx, baseEventNameLatestQuery)
+	var eventName string
+	err := row.Scan(&eventName)
+	if err != nil {
+		return "", err
+	}
+	return eventName, nil
+}
+
 
 func nullableText(s string) interface{} {
 	if s == "" {

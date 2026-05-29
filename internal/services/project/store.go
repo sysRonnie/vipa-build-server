@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"go-tailwind-test/internal/util/advisor"
+	"log"
 	"strconv"
 )
 
@@ -24,6 +25,51 @@ type ProjectStore interface {
 	UpdateProject(ctx context.Context, updatedProject ProjectRow) (error)
 	DeleteProject(ctx context.Context, id int) error
 	QueryProjectListNames(ctx context.Context) ([]string, error)
+	QueryProjectExpenseListByID(ctx context.Context, id int) (VendorExpenseList, error)
+
+	QueryProjectNameLatest(ctx context.Context) (string, error)
+}
+
+func (s *Store) QueryProjectNameLatest(ctx context.Context) (string, error) {
+	row := s.db.QueryRowContext(ctx, baseProjectNameLatestQuery)
+	var projectName string
+	err := row.Scan(&projectName)
+	if err != nil {
+		return "", err
+	}
+	return projectName, nil
+}
+
+func (s *Store) QueryProjectExpenseListByID(ctx context.Context, id int) (VendorExpenseList, error) {
+	rows, err := s.db.QueryContext(ctx, baseProjectExpenseListByIDQuery, id)
+	if err != nil {
+		return VendorExpenseList{}, err
+	}
+	defer rows.Close()
+	
+	expenseList := VendorExpenseList{
+		VendorExpenseList: []VendorExpense{},
+	}
+	for rows.Next() {
+		var expense VendorExpense
+		err := rows.Scan(
+			&expense.VendorName,
+			&expense.CostCategoryParent,
+			&expense.CostCategoryChild,
+			&expense.Amount,
+		)
+		if err != nil {
+			return VendorExpenseList{}, err
+		}
+		expenseList.VendorExpenseList = append(expenseList.VendorExpenseList, expense)
+	}
+	
+	if err := rows.Err(); err != nil {
+		log.Println("ERROR ERROR ERROR", err)
+		return VendorExpenseList{}, err
+	}
+	
+	return expenseList, nil
 }
 
 func (s *Store) QueryProjectListNames(ctx context.Context) ([]string, error) {

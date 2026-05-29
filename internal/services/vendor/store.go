@@ -22,6 +22,20 @@ type VendorStore interface {
 	InsertVendor(ctx context.Context, newVendor VendorRow) error
 	UpdateVendor(ctx context.Context, updatedVendor VendorRow) error
 	DeleteVendor(ctx context.Context, id int) error
+
+	QueryVendorNameLatest(ctx context.Context) (string, error) // New method for latest vendor name
+}
+
+func (s *Store) QueryVendorNameLatest(ctx context.Context) (string, error) {
+	row := s.db.QueryRowContext(ctx, baseVendorNameLatestQuery)
+	
+	var latest string
+	err := row.Scan(&latest)
+	if err != nil {
+		return "", err
+	}
+	
+	return latest, nil
 }
 
 func (s *Store) QueryVendorListNames(ctx context.Context) (VendorNameList, error) {

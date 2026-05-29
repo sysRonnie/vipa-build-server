@@ -101,3 +101,11 @@ const baseCustomerNamesQuery = `
 		ORDER BY created_at DESC
 `
 
+
+const baseCustomerNamesLatestQuery = `
+		SELECT CONCAT(customer_name_first, ' ', customer_name_last) AS full_name
+		FROM master_customer_list
+		WHERE flag_is_deleted = false
+		ORDER BY created_at DESC
+		LIMIT 1
+`

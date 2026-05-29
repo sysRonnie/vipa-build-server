@@ -20,6 +20,7 @@ func NewActivityService(store ActivityStore) *Service {
 
 type ActivityService interface {
 	GetActivityList(ctx context.Context) ([]ActivityRow, error)
+	GetActivityListByID(ctx context.Context, id int) (ActivityRowList, error)
 	GetActivityListRecycled(ctx context.Context) ([]ActivityRow, error)
 	GetActivityById(ctx context.Context, id int) (*ActivityRow, error)
 	InsertActivityExpense(ctx context.Context, newActivity ExpenseActivityRow) error
@@ -29,6 +30,18 @@ type ActivityService interface {
 	CreateActivity(ctx context.Context, newActivity ActivityRow) error
 	UpdateActivity(ctx context.Context, updatedActivity ActivityRow) (*ActivityRow, error)
 	GetActivityDropdownData(ctx context.Context) (*ActivityDropdownData, error)
+}
+
+func (s *Service) GetActivityListByID(ctx context.Context, id int) (ActivityRowList, error) {
+	advisor := advisor.FromContext(ctx)
+	advisor.Log("service_attached_get_activity_list_by_id" + strconv.Itoa(id))
+
+	activity, err := s.store.QueryActivityListByID(ctx, id)
+	if err != nil {
+		advisor.Error("failed to get activity list by id", err)
+		return ActivityRowList{}, err
+	}
+	return activity, nil
 }
 
 func (s *Service) GetActivityDropdownData(ctx context.Context) (*ActivityDropdownData, error) {

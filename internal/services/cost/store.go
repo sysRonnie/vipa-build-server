@@ -25,6 +25,18 @@ type CostStore interface {
 	InsertCost(ctx context.Context, newCost CostRow) error
 	UpdateCost(ctx context.Context, updatedCost CostRow) error
 	DeleteCost(ctx context.Context, id int) error
+
+	QueryCostNameLatest(ctx context.Context) (string, error)
+}
+
+func (s *Store) QueryCostNameLatest(ctx context.Context) (string, error) {
+	row := s.db.QueryRowContext(ctx, baseCostNameLatestQuery)
+	var costName string
+	err := row.Scan(&costName)
+	if err != nil {
+		return "", err
+	}
+	return costName, nil
 }
 
 func (s *Store) QueryCostListNames(ctx context.Context) (CostNameList, error) {
@@ -83,7 +95,7 @@ func (s *Store) InsertCost(
 	ctx context.Context,
 	newCost CostRow,
 ) error {
-
+	
 	_, err := s.db.ExecContext(
 		ctx,
 		baseCostInsert,

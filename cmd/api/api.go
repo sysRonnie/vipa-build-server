@@ -6,6 +6,7 @@ import (
 	"go-tailwind-test/internal/services/cost"
 	"go-tailwind-test/internal/services/customer"
 	"go-tailwind-test/internal/services/event"
+	"go-tailwind-test/internal/services/home"
 	"go-tailwind-test/internal/services/note"
 	"go-tailwind-test/internal/services/project"
 	"go-tailwind-test/internal/services/user"
@@ -43,6 +44,7 @@ func (s *API) APIService(e *echo.Echo) error {
 	projectHandler := project.NewProjectHandler(projectService, projectStore)
 	projectHandler.RegisterProjectRoutes(v1)
 
+
 	vendorStore := vendor.NewVendorStore(s.db)
 	vendorService := vendor.NewVendorService(vendorStore)
 	vendorHandler := vendor.NewVendorHandler(vendorService, vendorStore)
@@ -70,6 +72,12 @@ func (s *API) APIService(e *echo.Echo) error {
 	noteController := note.NewNoteController(noteService)
 	noteHandler := note.NewNoteHandler(noteController)
 	noteHandler.RegisterNoteRoutes(v1)
+
+	homeStore := home.NewHomeStore(s.db)
+	homeService := home.NewHomeService(homeStore)
+	homeController := home.NewHomeController(homeService)
+	homeHandler := home.NewHomeHandler(homeController)
+	homeHandler.RegisterHomeRoutes(v1)
 
 	return nil
 }

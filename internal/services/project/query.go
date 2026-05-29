@@ -28,6 +28,25 @@ func buildProjectListRecycledQuery() string {
 	return baseProjectListQuery + " AND A.FLAG_IS_DELETED = TRUE"
 }
 
+var baseProjectExpenseListByIDQuery = `
+		WITH CTE_VENDOR_EXPENSE AS (
+			SELECT project_id, vendor_id, cost_category_id, SUM(amount) AS total_amount
+			FROM USER_PROJECT_ACTIVITY
+			WHERE activity_type = 'expense'
+			AND project_id = $1
+			GROUP BY project_id, vendor_id, cost_category_id
+		)
+		SELECT 
+			B.vendor_name,
+			C.cost_category_parent,
+			CASE WHEN C.cost_category_child IS NULL THEN '' ELSE C.cost_category_child END AS cost_category_child,
+			A.total_amount
+		FROM CTE_VENDOR_EXPENSE A
+		LEFT JOIN MASTER_VENDOR_LIST B ON B.id = A.vendor_id
+		LEFT JOIN MASTER_COST_CATEGORY C ON C.id = A.cost_category_id
+
+`
+
 var baseProjectListNamesQuery = `
 SELECT DISTINCT 
 	A.PROJECT_NAME
@@ -90,4 +109,14 @@ SET
 	UPDATED_AT = NOW(),
 	FLAG_IS_DELETED = false
 WHERE ID = $9
+`
+
+const baseProjectNameLatestQuery = `
+SELECT 
+	CONCAT(A.PROJECT_NAME,' (',b.CUSTOMER_NAME_FIRST, ' ', b.CUSTOMER_NAME_LAST,')') as project_name
+FROM MASTER_PROJECT_LIST A
+LEFT JOIN MASTER_CUSTOMER_LIST B ON A.customer_id = b.id
+WHERE A.FLAG_IS_DELETED = FALSE
+ORDER BY A.CREATED_AT DESC
+LIMIT 1
 `

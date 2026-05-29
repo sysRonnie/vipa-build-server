@@ -31,8 +31,22 @@ func (h *Handler) RegisterCustomerRoutes(g *echo.Group) {
 	g.POST("/customer-delete", h.DeleteCustomer, auth.Middleware) 
 
 	g.GET("/customer-names", h.GetCustomerNames, auth.Middleware)
+	g.GET("/customer-name-latest", h.GetCustomerNamesLatest, auth.Middleware) // New route for latest customer names
 	g.GET("/customer-detail/:id", h.GetCustomerDetailScreen, auth.Middleware)
 	g.GET("/customer-read-recycled", h.GetCustomerListRecycled, auth.Middleware)
+}
+
+func (h *Handler) GetCustomerNamesLatest(c echo.Context) error {
+	advisor := advisor.FromContext(c.Request().Context())	
+	advisor.Log("advisor successfully attached to the request context in the GetCustomerNamesLatest handler")
+	
+	customerName, err := h.store.QueryCustomerNameLatest(c.Request().Context())
+	if err != nil {
+		advisor.Error("failed to query latest customer names from the database: ", err)
+		return network.FailFromError(c, network.ErrDatabaseFailure)
+	}
+	
+	return network.BuildSuccessResponse(c, customerName)
 }
 
 func (h *Handler) GetCustomerNames(c echo.Context) error {

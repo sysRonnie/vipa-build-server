@@ -25,3 +25,14 @@ type ProjectRowList struct {
 type ProjectNameList struct {
 	Names []string `json:"names"`
 }
+
+type VendorExpense struct {
+	VendorName string `json:"vendor"`
+	CostCategoryParent string `json:"cost_category_parent"`
+	CostCategoryChild *string `json:"cost_category_child"`
+	Amount float64 `json:"amount"`
+}
+
+type VendorExpenseList struct {
+	VendorExpenseList []VendorExpense `json:"vendor_expense_list"`
+}

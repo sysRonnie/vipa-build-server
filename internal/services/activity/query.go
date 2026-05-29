@@ -89,6 +89,80 @@ INSERT INTO USER_PROJECT_ACTIVITY (
 )
 `
 
+const baseActivityListByProjectIdQuery = `
+SELECT *
+FROM (
+	SELECT 
+		a.id,
+		a.user_id,
+		a.project_id,
+		p.project_name AS project_name,
+		a.activity_type,
+		a.activity_title,
+		a.activity_body,
+		a.amount,
+		TO_CHAR(a.activity_date, 'YYYY-MM-DD') AS activity_date,
+		a.event_category_id,
+		CASE WHEN ec.event_category_child IS NULL THEN ec.event_category_parent
+		ELSE CONCAT(ec.event_category_parent, ' (', ec.event_category_child, ')') END AS event_category_name,
+		a.cost_category_id,
+		CASE WHEN cc.cost_category_child IS NULL THEN cc.cost_category_parent 
+		ELSE CONCAT(cc.cost_category_parent, ' (', cc.cost_category_child, ')') END AS cost_category_name,
+		a.vendor_id,
+		v.vendor_name AS vendor_name,
+		a.income_category_id,
+		CASE
+			WHEN ic.income_category_child IS NULL THEN ic.income_category_parent
+			ELSE CONCAT(ic.income_category_parent, ' (', ic.income_category_child, ')')
+		END AS income_category_name,
+		a.photo_url,
+		a.photo_thumbnail_url,
+		a.flag_is_completed,
+		a.flag_is_deleted,
+		TO_CHAR(a.created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at,
+		TO_CHAR(a.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updated_at
+	FROM user_project_activity a
+	LEFT JOIN master_project_list p ON a.project_id = p.id
+	LEFT JOIN master_event_category ec ON a.event_category_id = ec.id
+	LEFT JOIN master_cost_category cc ON a.cost_category_id = cc.id
+	LEFT JOIN master_vendor_list v ON a.vendor_id = v.id
+	LEFT JOIN master_income_category ic ON a.income_category_id = ic.id
+	WHERE p.id = $1
+	AND a.flag_is_deleted = false
+
+	UNION ALL
+
+	SELECT
+		n.id,
+		n.user_id,
+		n.project_id,
+		p.project_name AS project_name,
+		'note' AS activity_type,
+		'Quick Note' AS activity_title,
+		n.note_body AS activity_body,
+		NULL::numeric AS amount,
+		TO_CHAR(n.created_at::date, 'YYYY-MM-DD') AS activity_date,
+		NULL::int AS event_category_id,
+		NULL::text AS event_category_name,
+		NULL::int AS cost_category_id,
+		NULL::text AS cost_category_name,
+		NULL::int AS vendor_id,
+		NULL::text AS vendor_name,
+		NULL::int AS income_category_id,
+		NULL::text AS income_category_name,
+		n.note_photo_url AS photo_url,
+		NULL::text AS photo_thumbnail_url,
+		false AS flag_is_completed,
+		n.flag_is_deleted,
+		TO_CHAR(n.created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at,
+		TO_CHAR(n.updated_at, 'YYYY-MM-DD HH24:MI:SS') AS updated_at
+	FROM user_project_note n
+	LEFT JOIN master_project_list p ON n.project_id = p.id
+	WHERE n.project_id = $1
+	AND n.flag_is_deleted = false
+) feed
+ORDER BY activity_date DESC, created_at DESC;
+`
 const baseActivityListByIdQuery = `
 SELECT 
 	a.id,
@@ -132,9 +206,15 @@ LEFT JOIN master_event_category ec ON a.event_category_id = ec.id
 LEFT JOIN master_cost_category cc ON a.cost_category_id = cc.id
 LEFT JOIN master_vendor_list v ON a.vendor_id = v.id
 LEFT JOIN master_income_category ic ON a.income_category_id = ic.id
-WHERE 1=1 AND a.id = $1
+WHERE 1=1 
+AND a.id = $1
 ORDER BY a.activity_date DESC, a.created_at DESC;
 `
+
+
+
+
+
 
 const baseActivityTypeQuery = `
 SELECT activity_type
@@ -383,10 +463,11 @@ ORDER BY A.VENDOR_NAME
 
 var baseCostListNamesQuery = `
 SELECT 
-	CASE WHEN A.COST_CATEGORY_CHILD IS NULL THEN A.COST_CATEGORY_PARENT 
+	CASE WHEN A.COST_CATEGORY_CHILD IS NULL OR A.COST_CATEGORY_CHILD = '' THEN A.COST_CATEGORY_PARENT 
 	ELSE CONCAT(A.COST_CATEGORY_PARENT, ' (', A.COST_CATEGORY_CHILD, ')') END AS COST_CATEGORY_NAME
 FROM MASTER_COST_CATEGORY A
 WHERE A.FLAG_IS_DELETED = FALSE
+ORDER BY COST_CATEGORY_NAME
 `
 
 var baseEventListNamesQuery = `

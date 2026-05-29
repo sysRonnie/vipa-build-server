@@ -20,6 +20,7 @@ func NewActivityHandler(controller ActivityController, service ActivityService, 
 func (h *Handler) RegisterActivityRoutes(g *echo.Group) {
 	g.GET("/activity-read", h.GetActivityList, auth.Middleware)
 	g.GET("/activity-read-recycled", h.GetActivityListRecycled, auth.Middleware)
+	g.GET("/activity-list-by-id/:id", h.GetActivityListByID, auth.Middleware)
 	g.GET("/activity-read-by-id/:id", h.GetActivityByID, auth.Middleware)
 
 	g.POST("/activity-create", h.CreateActivity, auth.Middleware)
@@ -29,6 +30,15 @@ func (h *Handler) RegisterActivityRoutes(g *echo.Group) {
 	g.POST("/activity-erase", h.RemoveActivityErase, auth.Middleware)
 
 	g.GET("/activity-dropdown-data", h.GetActivityDropdownData, auth.Middleware)
+}
+
+func (h *Handler) GetActivityListByID(c echo.Context) error {
+	res, err := h.controller.ControllerGetActivityListByID(c)
+	if err != nil {
+		return network.FailFromError(c, err)
+	}
+	
+	return network.BuildSuccessResponse(c, res)
 }
 
 func (h *Handler) GetActivityDropdownData(c echo.Context) error {
@@ -57,12 +67,17 @@ func (h *Handler) UpdateActivity(c echo.Context) error {
 
 func (h *Handler) CreateActivity(c echo.Context) error {
 	advisor, ctx := auth.GetAdvisorClaims(c)
+	advisor.Log("handler_create_activity")
+	advisor.Log("======= data line =====")
 
 	var req ActivityRow
 	if err := c.Bind(&req); err != nil {
 		advisor.Error("failed to bind create activity request", err)
 		return network.FailFromError(c, err)
 	}
+
+	advisor.Log("req.ActivityName: " + *req.ProjectName)
+	advisor.Log("req.CostCategory: " + *req.CostCategoryName)
 
 	if err := h.controller.CreateActivity(ctx, req); err != nil {
 		return network.FailFromError(c, err)

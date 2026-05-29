@@ -29,6 +29,26 @@ type ActivityController interface {
 	CreateActivity(ctx context.Context, activity ActivityRow) error
 	UpdateActivity(ctx context.Context, activity ActivityRow) (*ActivityRow, error)
 	GetActivityDropdownData(c echo.Context) (*ActivityDropdownData, error)
+	ControllerGetActivityListByID(c echo.Context) (ActivityRowList, error)
+}
+
+func (ctr *Controller) ControllerGetActivityListByID(c echo.Context) (ActivityRowList, error) {
+	advisor, ctx := auth.GetAdvisorClaims(c)
+	
+	advisor.Log("controller_attached_get_activity_list")
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		advisor.Error("invalid id parameter", err)
+		return ActivityRowList{}, err
+	}
+	activities, err := ctr.service.GetActivityListByID(ctx, id)
+
+	if err != nil {
+		advisor.Error("failed to get activity list by id", err)
+		return ActivityRowList{}, err
+	}
+	
+	return activities, nil
 }
 
 func (ctr *Controller) GetActivityDropdownData(c echo.Context) (*ActivityDropdownData, error) {
