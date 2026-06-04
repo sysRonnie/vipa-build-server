@@ -292,7 +292,6 @@ func (s *Store) UpdateActivity(ctx context.Context, email string, updatedActivit
 func (s *Store) InsertActivity(ctx context.Context, email string, activity ActivityRow) error {
 	advisor := advisor.FromContext(ctx)
 	advisor.Log("store_insert_activity")
-	advisor.Log("activity_project_name= " + *activity.ProjectName)
 
 
 

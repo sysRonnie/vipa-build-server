@@ -72,7 +72,8 @@ CTE_PROJECT_ACTIVITY AS (
 			0	
 		),0) AS total_percent,
 
-		MAX(created_at) AS last_activity_at
+		MAX(created_at) AS last_activity_at,
+		CURRENT_DATE - MIN(activity_date)  as total_project_days
 
 	FROM user_project_activity
 	WHERE flag_is_deleted = false
@@ -88,6 +89,7 @@ SELECT
 	ROUND(COALESCE(B.total_income, 0) - COALESCE(B.total_expenses, 0), 2)::int AS net_total,
 	COALESCE(B.total_events_complete, 0)::int AS total_events_complete,
 	COALESCE(B.total_percent, 0)::int AS total_percent,
+	COALESCE(B.total_project_days, 0) as total_project_days,
 	COALESCE(B.last_activity_at, NOW()) AS last_activity_at
 FROM CTE_PROJECT_KEYS A
 LEFT JOIN CTE_PROJECT_ACTIVITY B ON A.id = B.project_id
@@ -109,6 +111,7 @@ func (s *Store) ScanHomeProjectCards(rows *sql.Rows) (HomeDashboard, error) {
 			&card.NetTotal,
 			&card.TotalEventsComplete,
 			&card.TotalEventsPercent,
+			&card.TotalProjectDays,
 			&card.LastActivityAt,
 		)
 		if err != nil {

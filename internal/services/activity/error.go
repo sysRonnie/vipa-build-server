@@ -13,6 +13,12 @@ var (
 		StatusCode: 400,
 	}
 
+	ErrNoteBodyRequired = &errs.AppError{
+		Code: "NOTE_BODY_REQUIRED",
+		Message: "Note body is required",
+		StatusCode: 400,
+	}
+
 	ErrIncomeTitleRequired = &errs.AppError{
 		Code: "INCOME_TITLE_REQUIRED",
 		Message: "Income title is required",

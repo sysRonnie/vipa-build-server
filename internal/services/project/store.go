@@ -26,6 +26,7 @@ type ProjectStore interface {
 	DeleteProject(ctx context.Context, id int) error
 	QueryProjectListNames(ctx context.Context) ([]string, error)
 	QueryProjectExpenseListByID(ctx context.Context, id int) (VendorExpenseList, error)
+	QueryProjectIncomeListByID(ctx context.Context, id int) (VendorExpenseList, error)
 
 	QueryProjectNameLatest(ctx context.Context) (string, error)
 }
@@ -38,6 +39,37 @@ func (s *Store) QueryProjectNameLatest(ctx context.Context) (string, error) {
 		return "", err
 	}
 	return projectName, nil
+}
+func (s *Store) QueryProjectIncomeListByID(ctx context.Context, id int) (VendorExpenseList, error) {
+	rows, err := s.db.QueryContext(ctx, baseProjectIncomeListByIDQuery, id)
+	if err != nil {
+		return VendorExpenseList{}, err
+	}
+	defer rows.Close()
+	
+	incomeList := VendorExpenseList{
+		VendorExpenseList: []VendorExpense{},
+	}
+	for rows.Next() {
+		var income VendorExpense
+		err := rows.Scan(
+			&income.VendorName,
+			&income.CostCategoryParent,
+			&income.CostCategoryChild,
+			&income.Amount,
+		)
+		if err != nil {
+			return VendorExpenseList{}, err
+		}
+		incomeList.VendorExpenseList = append(incomeList.VendorExpenseList, income)
+	}
+	
+	if err := rows.Err(); err != nil {
+		log.Println("ERROR ERROR ERROR", err)
+		return VendorExpenseList{}, err
+	}
+	
+	return incomeList, nil
 }
 
 func (s *Store) QueryProjectExpenseListByID(ctx context.Context, id int) (VendorExpenseList, error) {

@@ -32,6 +32,7 @@ func (h *Handler) RegisterProjectRoutes(g *echo.Group) {
 	g.POST("/project-delete", h.DeleteProject, auth.Middleware)
 
 	g.GET("/project-expense-list-by-id/:id", h.GetProjectExpenseListByID, auth.Middleware)
+	g.GET("/project-income-list-by-id/:id", h.GetProjectIncomeListByID, auth.Middleware)
 
 	g.GET("/project-name-latest", h.GetProjectNameLatest, auth.Middleware)
 }
@@ -47,6 +48,29 @@ func (h *Handler) GetProjectNameLatest(c echo.Context) error {
 	}
 	
 	return network.BuildSuccessResponse(c, projectName)
+}
+
+func (h *Handler) GetProjectIncomeListByID(c echo.Context) error {
+	advisor := advisor.FromContext(c.Request().Context())
+	projectIdParam := c.Param("id")
+	if projectIdParam == "" {
+		advisor.Error("missing project ID in request path", network.ErrInvalidRequest)
+		return network.FailFromError(c, network.ErrInvalidRequest)
+	}
+	
+	projectId, err := strconv.Atoi(projectIdParam)
+	if err != nil {
+		advisor.Error("invalid project ID format: ", err)		
+		return network.FailFromError(c, network.ErrInvalidRequest)
+	}
+	
+	incomeList, err := h.store.QueryProjectIncomeListByID(c.Request().Context(), projectId)
+	if err != nil {
+		advisor.Error("failed to query project income list by ID from the database: ", err)
+		return network.FailFromError(c, network.ErrDatabaseFailure)
+	}
+	
+	return network.BuildSuccessResponse(c, incomeList)
 }
 
 func (h *Handler) GetProjectExpenseListByID(c echo.Context) error {

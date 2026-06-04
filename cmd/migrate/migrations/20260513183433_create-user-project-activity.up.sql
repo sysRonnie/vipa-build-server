@@ -29,8 +29,7 @@ CREATE TABLE IF NOT EXISTS USER_PROJECT_ACTIVITY (
             'event',
             'expense',
             'income',
-            'note',
-            'photo'
+            'note'
         )
     )
 );

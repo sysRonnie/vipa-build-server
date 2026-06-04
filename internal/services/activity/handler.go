@@ -76,8 +76,6 @@ func (h *Handler) CreateActivity(c echo.Context) error {
 		return network.FailFromError(c, err)
 	}
 
-	advisor.Log("req.ActivityName: " + *req.ProjectName)
-	advisor.Log("req.CostCategory: " + *req.CostCategoryName)
 
 	if err := h.controller.CreateActivity(ctx, req); err != nil {
 		return network.FailFromError(c, err)

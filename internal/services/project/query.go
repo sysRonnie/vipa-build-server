@@ -27,6 +27,22 @@ func buildProjectListQuery() string {
 func buildProjectListRecycledQuery() string {
 	return baseProjectListQuery + " AND A.FLAG_IS_DELETED = TRUE"
 }
+var baseProjectIncomeListByIDQuery = `
+		WITH CTE_VENDOR_EXPENSE AS (
+			SELECT project_id, activity_title, income_category_id, SUM(amount) AS total_amount
+			FROM USER_PROJECT_ACTIVITY
+			WHERE activity_type = 'income'
+			AND project_id = $1
+			GROUP BY project_id, activity_title, income_category_id
+		)
+		SELECT 
+			A.activity_title as vendor_name, 
+			B.income_category_parent,
+			CASE WHEN B.income_category_child IS NULL THEN '' ELSE B.income_category_child END AS cost_category_child,
+			A.total_amount
+		FROM CTE_VENDOR_EXPENSE A
+		LEFT JOIN MASTER_INCOME_CATEGORY B ON B.id = A.income_category_id
+`
 
 var baseProjectExpenseListByIDQuery = `
 		WITH CTE_VENDOR_EXPENSE AS (

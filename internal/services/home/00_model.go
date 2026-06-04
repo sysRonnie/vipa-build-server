@@ -16,6 +16,7 @@ type HomeProjectCard struct {
 	NetTotal float64 `json:"net_total"`
 	TotalEventsComplete int `json:"total_events_complete"`
 	TotalEventsPercent int `json:"total_events_percent"`
+	TotalProjectDays int `json:"total_project_days"`
 	LastActivityAt *time.Time `json:"last_activity_at,omitempty"`
 	LastActivityPretty *string `json:"last_activity_pretty,omitempty"`
 }

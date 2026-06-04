@@ -1,6 +1,5 @@
 package activity
 
-
 import "strings"
 
 func ValidateFormIncome(activity ActivityRow) error {
@@ -26,6 +25,7 @@ func ValidateFormIncome(activity ActivityRow) error {
 
 	return nil
 }
+
 func ValidateFormExpense(activity ActivityRow) error {
 	if activity.ProjectName == nil || strings.TrimSpace(*activity.ProjectName) == "" {
 		return ErrProjectNameRequired
@@ -66,6 +66,18 @@ func ValidateFormEvent(activity ActivityRow) error {
 	return nil
 }
 
+func ValidateFormNote(activity ActivityRow) error {
+	if activity.ProjectName == nil || strings.TrimSpace(*activity.ProjectName) == "" {
+		return ErrProjectNameRequired
+	}
+
+	if strings.TrimSpace(activity.ActivityTitle) == "" && (activity.ActivityBody == nil || strings.TrimSpace(*activity.ActivityBody) == "") {
+		return ErrNoteBodyRequired
+	}
+
+	return nil
+}
+
 func (a ActivityRow) ValidateForCreate() error {
 	switch a.ActivityType {
 	case string(ACTIVITY_TYPE_EVENT):
@@ -76,6 +88,9 @@ func (a ActivityRow) ValidateForCreate() error {
 
 	case string(ACTIVITY_TYPE_INCOME):
 		return ValidateFormIncome(a)
+
+	case string(ACTIVITY_TYPE_NOTE):
+		return ValidateFormNote(a)
 
 	default:
 		return ErrInvalidActivityType

@@ -312,7 +312,7 @@ INSERT INTO user_project_activity (
 	$4,
 	$5,
 	$6,
-	$7,
+	CASE WHEN $7 IS NULL THEN NOW()::date ELSE $7 END,
 	(SELECT id FROM master_event_category WHERE event_category_parent = $8 AND flag_is_deleted = false LIMIT 1),
 	(SELECT id FROM master_cost_category WHERE CONCAT(cost_category_parent, ' (', cost_category_child, ')') = $9 AND flag_is_deleted = false LIMIT 1),
 	(SELECT id FROM master_vendor_list WHERE vendor_name = $10 AND flag_is_deleted = false LIMIT 1),
