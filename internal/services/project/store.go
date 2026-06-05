@@ -3,9 +3,12 @@ package project
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"go-tailwind-test/internal/util/advisor"
 	"log"
 	"strconv"
+
+	"github.com/lib/pq"
 )
 
 type Store struct {
@@ -57,6 +60,7 @@ func (s *Store) QueryProjectIncomeListByID(ctx context.Context, id int) (VendorE
 			&income.CostCategoryParent,
 			&income.CostCategoryChild,
 			&income.Amount,
+			&income.IsCompleted,
 		)
 		if err != nil {
 			return VendorExpenseList{}, err
@@ -89,6 +93,7 @@ func (s *Store) QueryProjectExpenseListByID(ctx context.Context, id int) (Vendor
 			&expense.CostCategoryParent,
 			&expense.CostCategoryChild,
 			&expense.Amount,
+			&expense.IsCompleted,
 		)
 		if err != nil {
 			return VendorExpenseList{}, err
@@ -199,8 +204,27 @@ func nullableDate(value string) any {
 
 	return value
 }
-func (s *Store) InsertProject(ctx context.Context, newProject ProjectRow) error {
-	_, err := s.db.ExecContext(ctx, baseProjectInsert,
+func (s *Store) ExistsProjectInRecycleBin(ctx context.Context,name string) (bool, error) {
+	row := s.db.QueryRowContext(
+		ctx,
+		baseProjectExistsInRecycleBinQuery,
+		name,
+	)
+
+	var exists bool
+	err := row.Scan(&exists)
+
+	return exists, err
+}
+
+
+func (s *Store) InsertProject(
+	ctx context.Context,
+	newProject ProjectRow,
+) error {
+	_, err := s.db.ExecContext(
+		ctx,
+		baseProjectInsert,
 		newProject.CustomerName,
 		newProject.Name,
 		nullableDate(newProject.StartDate),
@@ -210,7 +234,29 @@ func (s *Store) InsertProject(ctx context.Context, newProject ProjectRow) error 
 		newProject.Budget,
 		newProject.Note,
 	)
-	return err
+
+	if err != nil {
+		var pqErr *pq.Error
+
+		if errors.As(err, &pqErr) &&
+			pqErr.Code == "23505" {
+
+			exists, recycleErr := s.ExistsProjectInRecycleBin(
+				ctx,
+				newProject.Name,
+			)
+
+			if recycleErr == nil && exists {
+				return ErrDuplicateProjectInRecycleBin
+			}
+
+			return ErrDuplicateProjectNotDeleted
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 

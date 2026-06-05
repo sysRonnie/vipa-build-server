@@ -3,6 +3,7 @@ package activity
 import (
 	"go-tailwind-test/internal/services/auth"
 	"go-tailwind-test/internal/util/network"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -19,6 +20,8 @@ func NewActivityHandler(controller ActivityController, service ActivityService, 
 
 func (h *Handler) RegisterActivityRoutes(g *echo.Group) {
 	g.GET("/activity-read", h.GetActivityList, auth.Middleware)
+	g.GET("/activity-read-notes", h.GetActivityListNotes, auth.Middleware)
+
 	g.GET("/activity-read-recycled", h.GetActivityListRecycled, auth.Middleware)
 	g.GET("/activity-list-by-id/:id", h.GetActivityListByID, auth.Middleware)
 	g.GET("/activity-read-by-id/:id", h.GetActivityByID, auth.Middleware)
@@ -33,6 +36,7 @@ func (h *Handler) RegisterActivityRoutes(g *echo.Group) {
 }
 
 func (h *Handler) GetActivityListByID(c echo.Context) error {
+	time.Sleep(2 * time.Second)
 	res, err := h.controller.ControllerGetActivityListByID(c)
 	if err != nil {
 		return network.FailFromError(c, err)
@@ -42,6 +46,7 @@ func (h *Handler) GetActivityListByID(c echo.Context) error {
 }
 
 func (h *Handler) GetActivityDropdownData(c echo.Context) error {
+	time.Sleep(2 * time.Second)
 	res, err := h.controller.GetActivityDropdownData(c)
 	if err != nil {
 		return network.FailFromError(c, err)
@@ -113,6 +118,7 @@ func (h *Handler) UpdateActivityExpense(c echo.Context) error {
 }
 
 func (h *Handler) GetActivityByID(c echo.Context) error {
+	time.Sleep(2 * time.Second)
 	res, err := h.controller.ControllerGetActivityById(c)
 	if err != nil {
 		return network.FailFromError(c, err)
@@ -130,8 +136,19 @@ func (h *Handler) InsertActivityExpense(c echo.Context) error {
 	
 	return network.BuildSuccessResponse(c, nil)
 }
+func (h *Handler) GetActivityListNotes(c echo.Context) error {
+	time.Sleep(2 * time.Second)
+
+	res, err := h.controller.ControllerGetActivityListNotes(c)
+	if err != nil {
+		return network.FailFromError(c, err)
+	}
+
+	return network.BuildSuccessResponse(c, res)
+}
 
 func (h *Handler) GetActivityList(c echo.Context) error {
+	time.Sleep(2 * time.Second)
 	res, err := h.controller.ControllerGetActivityList(c)
 	if err != nil {
 		return network.FailFromError(c, err)

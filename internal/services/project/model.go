@@ -31,6 +31,7 @@ type VendorExpense struct {
 	CostCategoryParent string `json:"cost_category_parent"`
 	CostCategoryChild *string `json:"cost_category_child"`
 	Amount float64 `json:"amount"`
+	IsCompleted bool `json:"is_completed"`
 }
 
 type VendorExpenseList struct {

@@ -27,36 +27,47 @@ func buildProjectListQuery() string {
 func buildProjectListRecycledQuery() string {
 	return baseProjectListQuery + " AND A.FLAG_IS_DELETED = TRUE"
 }
+
+var baseProjectExistsInRecycleBinQuery = `
+SELECT EXISTS (
+	SELECT 1
+	FROM MASTER_PROJECT_LIST
+	WHERE LOWER(PROJECT_NAME) = LOWER($1) AND FLAG_IS_DELETED = TRUE
+)
+`
+
 var baseProjectIncomeListByIDQuery = `
 		WITH CTE_VENDOR_EXPENSE AS (
-			SELECT project_id, activity_title, income_category_id, SUM(amount) AS total_amount
+			SELECT project_id, activity_title, income_category_id, SUM(amount) AS total_amount, flag_is_completed
 			FROM USER_PROJECT_ACTIVITY
 			WHERE activity_type = 'income'
 			AND project_id = $1
-			GROUP BY project_id, activity_title, income_category_id
+			GROUP BY project_id, activity_title, income_category_id, flag_is_completed
 		)
 		SELECT 
 			A.activity_title as vendor_name, 
 			B.income_category_parent,
 			CASE WHEN B.income_category_child IS NULL THEN '' ELSE B.income_category_child END AS cost_category_child,
-			A.total_amount
+			A.total_amount,
+			A.flag_is_completed
 		FROM CTE_VENDOR_EXPENSE A
 		LEFT JOIN MASTER_INCOME_CATEGORY B ON B.id = A.income_category_id
 `
 
 var baseProjectExpenseListByIDQuery = `
 		WITH CTE_VENDOR_EXPENSE AS (
-			SELECT project_id, vendor_id, cost_category_id, SUM(amount) AS total_amount
+			SELECT project_id, vendor_id, cost_category_id, SUM(amount) AS total_amount, flag_is_completed
 			FROM USER_PROJECT_ACTIVITY
 			WHERE activity_type = 'expense'
 			AND project_id = $1
-			GROUP BY project_id, vendor_id, cost_category_id
+			GROUP BY project_id, vendor_id, cost_category_id, flag_is_completed
 		)
 		SELECT 
 			B.vendor_name,
 			C.cost_category_parent,
 			CASE WHEN C.cost_category_child IS NULL THEN '' ELSE C.cost_category_child END AS cost_category_child,
-			A.total_amount
+			A.total_amount,
+			A.flag_is_completed
 		FROM CTE_VENDOR_EXPENSE A
 		LEFT JOIN MASTER_VENDOR_LIST B ON B.id = A.vendor_id
 		LEFT JOIN MASTER_COST_CATEGORY C ON C.id = A.cost_category_id

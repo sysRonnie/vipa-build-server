@@ -20,6 +20,7 @@ func NewActivityController(service ActivityService) *Controller {
 
 type ActivityController interface {
 	ControllerGetActivityList(c echo.Context) (*ActivityRowList, error)
+	ControllerGetActivityListNotes(c echo.Context) (*ActivityRowList, error)
 	ControllerGetActivityListRecycled(c echo.Context) (*ActivityRowList, error)
 	ControllerInsertActivityExpense(c echo.Context)  error
 	ControllerUpdateActivityExpense(c echo.Context)  error
@@ -199,6 +200,21 @@ func (ctr *Controller) ControllerInsertActivityExpense(c echo.Context) error {
 
 
 
+func (ctr *Controller) ControllerGetActivityListNotes(c echo.Context) (*ActivityRowList, error) {
+	advisor, ctx := auth.GetAdvisorClaims(c)
+
+	advisor.Log("controller_attached_get_activity_list_notes")
+
+	activities, err := ctr.service.GetActivityListNotes(ctx)
+	if err != nil {
+		advisor.Error("failed to get activity list notes", err)
+		return nil, err
+	}
+
+	return &ActivityRowList{
+		Activities: activities,
+	}, nil
+}
 func (ctr *Controller) ControllerGetActivityList(c echo.Context) (*ActivityRowList, error) {
 	advisor, ctx := auth.GetAdvisorClaims(c)
 

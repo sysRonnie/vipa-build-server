@@ -3,6 +3,9 @@ package vendor
 import (
 	"context"
 	"database/sql"
+	"errors"
+
+	"github.com/lib/pq"
 )
 
 type Store struct {
@@ -100,8 +103,20 @@ func (s *Store) UpdateVendor(ctx context.Context, updatedVendor VendorRow) (err 
 	return nil
 }
 
-func (s *Store) InsertVendor(ctx context.Context, newVendor VendorRow) error {
-	_, err := s.db.ExecContext(ctx, baseVendorInsert,
+func (s *Store) ExistsVendorInRecycleBin(ctx context.Context,name string) (bool, error) {
+	row := s.db.QueryRowContext(ctx, baseVendorExistsInRecycleBinQuery, name)
+
+	var exists bool
+	err := row.Scan(&exists)
+
+	return exists, err
+}
+
+
+func (s *Store) InsertVendor(ctx context.Context,newVendor VendorRow,) error {
+	_, err := s.db.ExecContext(
+		ctx,
+		baseVendorInsert,
 		newVendor.Name,
 		newVendor.PrimaryContact,
 		newVendor.Phone,
@@ -113,7 +128,24 @@ func (s *Store) InsertVendor(ctx context.Context, newVendor VendorRow) error {
 		newVendor.AddressZip,
 		newVendor.Comment,
 	)
-	return err
+
+	if err != nil {
+		var pqErr *pq.Error
+
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			exists, recycleErr := s.ExistsVendorInRecycleBin(ctx, newVendor.Name)
+
+			if recycleErr == nil && exists {
+				return ErrDuplicateVendorInRecycleBin
+			}
+
+			return ErrDuplicateVendorNotDeleted
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 func (s *Store) QueryVendorList(ctx context.Context) ([]VendorRow, error) {

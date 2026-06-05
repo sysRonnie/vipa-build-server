@@ -5,6 +5,7 @@ import (
 	"go-tailwind-test/internal/util/advisor"
 	"go-tailwind-test/internal/util/network"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -51,6 +52,7 @@ func (h *Handler) GetProjectNameLatest(c echo.Context) error {
 }
 
 func (h *Handler) GetProjectIncomeListByID(c echo.Context) error {
+	time.Sleep(2 * time.Second)
 	advisor := advisor.FromContext(c.Request().Context())
 	projectIdParam := c.Param("id")
 	if projectIdParam == "" {
@@ -74,6 +76,7 @@ func (h *Handler) GetProjectIncomeListByID(c echo.Context) error {
 }
 
 func (h *Handler) GetProjectExpenseListByID(c echo.Context) error {
+	time.Sleep(2 * time.Second)
 	advisor := advisor.FromContext(c.Request().Context())
 	projectIdParam := c.Param("id")
 	if projectIdParam == "" {
@@ -182,19 +185,6 @@ func (h *Handler) InsertProject(c echo.Context) error {
 		return network.FailFromError(c, err)
 	}
 
-	advisor.Log(" ----- JSON STRUCT ------")
-	advisor.Log("req.ID" + strconv.Itoa(req.ID))
-	advisor.Log("req.Name"+  req.Name)
-	advisor.Log("req.CustomerName"+  req.CustomerName)
-	advisor.Log("req.StartDate"+  req.StartDate)
-	advisor.Log("req.EndDateEst"+  req.EndDateEst)
-	advisor.Log("req.EndDateActual"+  req.EndDateActual)
-	advisor.Log("req.Price"+  strconv.FormatFloat(req.Price, 'f', 2, 64))
-	advisor.Log("req.Budget"+  strconv.FormatFloat(req.Budget, 'f', 2, 64))
-	advisor.Log("req.Note"+  req.Note)
-	advisor.Log("req.IsDeleted"+  strconv.FormatBool(req.IsDeleted))
-	advisor.Log("req.CreatedAt"+  strconv.FormatInt(req.CreatedAt.Unix(), 10))
-	advisor.Log("req.UpdatedAt"+  strconv.FormatInt(req.UpdatedAt.Unix(), 10))
 	
 	
 	err := h.store.InsertProject(c.Request().Context(), req)

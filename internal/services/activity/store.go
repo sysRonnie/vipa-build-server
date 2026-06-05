@@ -19,6 +19,7 @@ func NewActivityStore(db *sql.DB) *Store {
 
 type ActivityStore interface {
 	QueryActivityList(ctx context.Context) ([]ActivityRow, error)
+	QueryActivityListNotes(ctx context.Context) ([]ActivityRow, error)
 	QueryActivityListByID(ctx context.Context, id int) (ActivityRowList, error)
 	QueryActivityListRecycled(ctx context.Context) ([]ActivityRow, error)
 	QueryActivityById(ctx context.Context, id int) (*ActivityRow, error)
@@ -59,6 +60,8 @@ func (s *Store) QueryActivityListByID(ctx context.Context, id int) (ActivityRowL
 			&activity.UserID,
 			&activity.ProjectID,
 			&activity.ProjectName,
+			&activity.CustomerID,
+			&activity.CustomerName,
 			&activity.ActivityType,
 			&activity.ActivityTitle,
 			&activity.ActivityBody,
@@ -293,7 +296,7 @@ func (s *Store) InsertActivity(ctx context.Context, email string, activity Activ
 	advisor := advisor.FromContext(ctx)
 	advisor.Log("store_insert_activity")
 
-
+	advisor.Log("activity_date: " + *activity.ActivityDate) // Log the activity date for debugging
 
 	_, err := s.db.ExecContext(
 		ctx,
@@ -303,8 +306,8 @@ func (s *Store) InsertActivity(ctx context.Context, email string, activity Activ
 		activity.ActivityType,
 		activity.ActivityTitle,
 		activity.ActivityBody,
-		activity.Amount,
 		activity.ActivityDate,
+		activity.Amount,
 		activity.EventCategoryName,
 		activity.CostCategoryName,
 		activity.VendorName,
@@ -444,6 +447,8 @@ func (s *Store) QueryActivityById(ctx context.Context, id int) (*ActivityRow, er
 			&activity.UserID,
 			&activity.ProjectID,
 			&activity.ProjectName,
+			&activity.CustomerID,
+			&activity.CustomerName,
 			&activity.ActivityType,
 			&activity.ActivityTitle,
 			&activity.ActivityBody,
@@ -511,7 +516,7 @@ func (s *Store) InsertActivityExpense(
 
 func (s *Store) QueryActivityListRecycled(ctx context.Context) ([]ActivityRow, error) {
 	advisor := advisor.FromContext(ctx)
-	advisor.Log("store_attached_query_activity_list")
+	advisor.Log("store_attached_query_activity_list_recycled")
 	rows, err := s.db.QueryContext(ctx, BuildBaseActivityListQueryWithDeletedFilter(true))
 	if err != nil {
 		advisor.Error("failed to query activity list", err)
@@ -527,6 +532,8 @@ func (s *Store) QueryActivityListRecycled(ctx context.Context) ([]ActivityRow, e
 			&activity.UserID,
 			&activity.ProjectID,
 			&activity.ProjectName,
+			&activity.CustomerID,
+			&activity.CustomerName,
 			&activity.ActivityType,
 			&activity.ActivityTitle,
 			&activity.ActivityBody,
@@ -580,6 +587,69 @@ func (s *Store) QueryActivityList(ctx context.Context) ([]ActivityRow, error) {
 			&activity.UserID,
 			&activity.ProjectID,
 			&activity.ProjectName,
+			&activity.CustomerID,
+			&activity.CustomerName,
+			&activity.ActivityType,
+			&activity.ActivityTitle,
+			&activity.ActivityBody,
+			&activity.Amount,
+			&activity.ActivityDate,
+
+			&activity.EventCategoryID,
+			&activity.EventCategoryName,
+
+			&activity.CostCategoryID,
+			&activity.CostCategoryName,
+			
+			&activity.VendorID,
+			&activity.VendorName,
+
+			&activity.IncomeCategoryID,
+			&activity.IncomeCategoryName,
+
+			&activity.PhotoURL,
+			&activity.PhotoThumbnailURL,
+			&activity.FlagIsCompleted,
+			&activity.FlagIsDeleted,
+			&activity.CreatedAt,
+			&activity.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		activities = append(activities, activity)
+	}
+	
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(activities) == 0 {
+		return []ActivityRow{}, nil
+	}
+	return activities, nil
+}
+func (s *Store) QueryActivityListNotes(ctx context.Context) ([]ActivityRow, error) {
+	advisor := advisor.FromContext(ctx)
+	advisor.Log("store_attached_query_activity_list_notes")
+	rows, err := s.db.QueryContext(ctx, baseActivityListQueryNotes)
+	if err != nil {
+		advisor.Error("failed to query activity list notes", err)
+		return nil, err
+	}
+	defer rows.Close()
+	
+	var activities []ActivityRow
+	for rows.Next() {
+		var activity ActivityRow
+		err := rows.Scan(
+			&activity.ID,
+			&activity.UserID,
+			&activity.ProjectID,
+			&activity.ProjectName,
+
+			&activity.CustomerID,
+			&activity.CustomerName,
+
 			&activity.ActivityType,
 			&activity.ActivityTitle,
 			&activity.ActivityBody,

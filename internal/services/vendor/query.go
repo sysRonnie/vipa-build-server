@@ -46,6 +46,15 @@ INSERT INTO MASTER_VENDOR_LIST (
 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 `
 
+
+var baseVendorExistsInRecycleBinQuery = `
+SELECT EXISTS (
+	SELECT 1
+	FROM MASTER_VENDOR_LIST
+	WHERE LOWER(VENDOR_NAME) = LOWER($1) AND FLAG_IS_DELETED = TRUE
+)
+`
+
 var baseVendorByIDQuery = `
 SELECT 
 	A.ID,

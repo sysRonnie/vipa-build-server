@@ -134,7 +134,7 @@ func (h *Handler) InsertVendor(c echo.Context) error {
 	err := h.store.InsertVendor(c.Request().Context(), req)
 	if err != nil {
 		advisor.Error("failed to insert vendor into the database: ", err)
-		return network.FailFromError(c, network.ErrDatabaseFailure)
+		return network.FailFromError(c, err)
 	}
 	
 	return network.BuildSuccessResponseOK(c)

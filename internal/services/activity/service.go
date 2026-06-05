@@ -20,6 +20,7 @@ func NewActivityService(store ActivityStore) *Service {
 
 type ActivityService interface {
 	GetActivityList(ctx context.Context) ([]ActivityRow, error)
+	GetActivityListNotes(ctx context.Context) ([]ActivityRow, error)
 	GetActivityListByID(ctx context.Context, id int) (ActivityRowList, error)
 	GetActivityListRecycled(ctx context.Context) ([]ActivityRow, error)
 	GetActivityById(ctx context.Context, id int) (*ActivityRow, error)
@@ -208,6 +209,16 @@ func (s *Service) InsertActivityExpense(ctx context.Context, newActivity Expense
 		return err
 	}
 	return nil
+}
+func (s *Service) GetActivityListNotes(ctx context.Context) ([]ActivityRow, error) {
+	advisor := advisor.FromContext(ctx)
+	advisor.Log("service_attached_get_activity_list_notes")
+	activities, err := s.store.QueryActivityListNotes(ctx)
+	if err != nil {
+		advisor.Error("failed to get activity list notes", err)
+		return nil, err
+	}
+	return activities, nil
 }
 
 func (s *Service) GetActivityList(ctx context.Context) ([]ActivityRow, error) {

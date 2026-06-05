@@ -18,6 +18,9 @@ type ActivityRow struct {
 	ProjectID int `json:"project_id"`
 	ProjectName *string `json:"project_name,omitempty"`
 
+	CustomerID *int `json:"customer_id,omitempty"`
+	CustomerName *string `json:"customer_name,omitempty"`
+
 	ActivityType string `json:"activity_type"`
 	ActivityTitle string `json:"activity_title"`
 	ActivityBody *string `json:"activity_body,omitempty"`
