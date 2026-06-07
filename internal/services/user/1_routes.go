@@ -28,6 +28,18 @@ func (h *Handler) RegisterUserRoutes(g *echo.Group) {
 	g.POST("/handle-refresh-token", h.HandleRefreshTokenRequest)
 	g.POST("/handle-logout", h.HandleLogoutRequest, auth.Middleware)
 	g.GET("/test-auth", h.HandleTestAuth, auth.Middleware)
+	g.GET("/user-email", h.HandleGetUserEmail, auth.Middleware)
+}
+
+func (h *Handler) HandleGetUserEmail(c echo.Context) error {
+	claims := auth.GetClaimsFromContext(c)
+	userEmail := claims.UserEmail
+
+	return network.Success(c, network.SandboxResponse{
+		StatusCode: 200,
+		Message: "Successfully retrieved user email",
+		Data: userEmail,
+	})
 }
 
 func (h *Handler) HandleTest(c echo.Context) error {

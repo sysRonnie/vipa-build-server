@@ -21,6 +21,15 @@ func buildCostListRecycledQuery() string {
 	return baseCostListQuery + " AND A.FLAG_IS_DELETED = TRUE ORDER BY A.UPDATED_AT DESC"
 }
 
+var baseCostExistsInRecycleBinQuery = `
+SELECT EXISTS (
+	SELECT 1
+	FROM master_cost_category
+	WHERE LOWER(cost_category_parent) = LOWER($1)
+	AND LOWER(COALESCE(cost_category_child, '')) = LOWER(COALESCE($2, ''))
+	AND flag_is_deleted = true
+);
+`
 
 var baseCostInsert = `
 INSERT INTO MASTER_COST_CATEGORY (
@@ -29,7 +38,7 @@ INSERT INTO MASTER_COST_CATEGORY (
 ) VALUES (
 	$1,
 	CASE
-		WHEN TRIM($2) = '' THEN NULL
+		WHEN TRIM($2) = '' THEN ''
 		ELSE TRIM($2)
 	END
 )

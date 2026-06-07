@@ -14,11 +14,11 @@ WHERE 1=1
 `	
 
 func buildEventListQuery() string {
-	return baseEventListQuery + " AND A.FLAG_IS_DELETED = FALSE"
+	return baseEventListQuery + " AND A.FLAG_IS_DELETED = FALSE ORDER BY A.CREATED_AT DESC"
 }
 
 func buildEventListRecycledQuery() string {
-	return baseEventListQuery + " AND A.FLAG_IS_DELETED = TRUE"
+	return baseEventListQuery + " AND A.FLAG_IS_DELETED = TRUE ORDER BY A.CREATED_AT DESC"
 }
 
 var baseEventListNamesQuery = `
@@ -31,7 +31,15 @@ FROM MASTER_EVENT_CATEGORY A
 WHERE A.FLAG_IS_DELETED = FALSE
 ORDER BY A.EVENT_CATEGORY_PARENT
 `
-
+var baseEventExistsInRecycleBinQuery = `
+SELECT EXISTS (
+	SELECT 1
+	FROM master_event_category
+	WHERE LOWER(event_category_parent) = LOWER($1)
+	AND LOWER(event_category_child) = LOWER(COALESCE($2, ''))
+	AND flag_is_deleted = true
+);
+`
 
 var baseEventInsert = `
 INSERT INTO MASTER_EVENT_CATEGORY (
@@ -40,7 +48,7 @@ INSERT INTO MASTER_EVENT_CATEGORY (
 ) VALUES (
 	$1,
 	CASE
-		WHEN $2 = '' THEN NULL
+		WHEN $2 = '' THEN ''
 		ELSE $2
 	END
 )

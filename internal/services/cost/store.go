@@ -3,8 +3,9 @@ package cost
 import (
 	"context"
 	"database/sql"
-	"go-tailwind-test/internal/util/network"
-	"strings"
+	"errors"
+
+	"github.com/lib/pq"
 )
 
 type Store struct {
@@ -90,12 +91,21 @@ func (s *Store) UpdateCost(ctx context.Context, updatedCost CostRow) (err error)
 	return nil
 }
 
+func (s *Store) ExistsCostInRecycleBin(ctx context.Context,parent string,child string,) (bool, error) {
+	row := s.db.QueryRowContext(
+		ctx,
+		baseCostExistsInRecycleBinQuery,
+		parent,
+		child,
+	)
 
-func (s *Store) InsertCost(
-	ctx context.Context,
-	newCost CostRow,
-) error {
-	
+	var exists bool
+	err := row.Scan(&exists)
+
+	return exists, err
+}
+
+func (s *Store) InsertCost(ctx context.Context,newCost CostRow,) error {
 	_, err := s.db.ExecContext(
 		ctx,
 		baseCostInsert,
@@ -104,11 +114,20 @@ func (s *Store) InsertCost(
 	)
 
 	if err != nil {
-		if strings.Contains(
-			err.Error(),
-			"duplicate key value violates unique constraint",
-		) {
-			return network.ErrRecordExists
+		var pqErr *pq.Error
+
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			exists, recycleErr := s.ExistsCostInRecycleBin(
+				ctx,
+				newCost.Parent,
+				newCost.Child,
+			)
+
+			if recycleErr == nil && exists {
+				return ErrDuplicateCostInRecycleBin
+			}
+
+			return ErrDuplicateCostNotDeleted
 		}
 
 		return err

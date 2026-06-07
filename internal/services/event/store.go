@@ -3,9 +3,12 @@ package event
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"go-tailwind-test/internal/util/advisor"
 	"go-tailwind-test/internal/util/network"
 	"strings"
+
+	"github.com/lib/pq"
 )
 
 type Store struct {
@@ -132,12 +135,22 @@ func (s *Store) UpdateEvent(ctx context.Context, updatedEvent EventRow) (err err
 	return nil
 }
 
+func (s *Store) ExistsEventInRecycleBin(ctx context.Context, parent, child string) (bool, error) {
+	row := s.db.QueryRowContext(ctx, baseEventExistsInRecycleBinQuery, parent, child)
+	var exists bool
+	err := row.Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}
 
 func (s *Store) InsertEvent(
 	ctx context.Context,
 	newEvent EventRow,
 ) error {
 	advisor := advisor.FromContext(ctx)
+
 	_, err := s.db.ExecContext(
 		ctx,
 		baseEventInsert,
@@ -146,12 +159,22 @@ func (s *Store) InsertEvent(
 	)
 
 	if err != nil {
-		if strings.Contains(
-			err.Error(),
-			"duplicate key value violates unique constraint",
-		) {
+		var pqErr *pq.Error
+
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
 			advisor.Log("Attempted to insert duplicate event with parent: " + newEvent.Parent + " and child: " + newEvent.Child)
-			return network.ErrRecordExists
+
+			exists, recycleErr := s.ExistsEventInRecycleBin(
+				ctx,
+				newEvent.Parent,
+				newEvent.Child,
+			)
+
+			if recycleErr == nil && exists {
+				return ErrDuplicateEventInRecycleBin
+			}
+
+			return ErrDuplicateEventNotDeleted
 		}
 
 		return err

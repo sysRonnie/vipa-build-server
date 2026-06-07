@@ -1,15 +1,21 @@
-CREATE TABLE IF NOT EXISTS MASTER_EVENT_CATEGORY (
-    ID SERIAL PRIMARY KEY,
-    EVENT_CATEGORY_PARENT TEXT NOT NULL,
-    EVENT_CATEGORY_CHILD TEXT,
-    FLAG_IS_DELETED BOOLEAN DEFAULT FALSE,
-    CREATED_AT TIMESTAMPTZ DEFAULT NOW(),
-    UPDATED_AT TIMESTAMPTZ DEFAULT NOW(),
-
-    UNIQUE (EVENT_CATEGORY_PARENT, EVENT_CATEGORY_CHILD)
+CREATE TABLE IF NOT EXISTS master_event_category (
+    id SERIAL PRIMARY KEY,
+    event_category_parent TEXT NOT NULL,
+    event_category_child TEXT NOT NULL DEFAULT '',
+    flag_is_deleted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-INSERT INTO MASTER_EVENT_CATEGORY (EVENT_CATEGORY_PARENT)
+CREATE UNIQUE INDEX IF NOT EXISTS uq_event_category_name
+ON master_event_category (
+    LOWER(event_category_parent),
+    LOWER(event_category_child)
+);
+
+INSERT INTO master_event_category (
+    event_category_parent
+)
 VALUES
 ('Pre-Construction'),
 ('Site Work'),
