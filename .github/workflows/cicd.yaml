@@ -6,10 +6,11 @@ on:
       - main
 
 env:
-  PROJECT_ID: ronnies-world-prod
-  SERVICE_NAME: ronnies-world-server
+  PROJECT_ID: vipa-build-prod
+  SERVICE_NAME: vipa-build-server
   REGION: us-east1
-  REPO_NAME: ronnies-world-repo
+  REPO_NAME: vipa-build
+  CLOUD_SQL_INSTANCE: vipa-build-prod:us-east1:vipa-build-db-prod
 
 jobs:
   deploy:
@@ -31,9 +32,9 @@ jobs:
         run: gcloud config set project $PROJECT_ID
 
       - name: Configure Docker
-        run: gcloud auth configure-docker $REGION-docker.pkg.dev
+        run: gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
 
-      - name: Build & tag image
+      - name: Build image
         run: |
           IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$SERVICE_NAME:${{ github.sha }}
           docker build -t $IMAGE .
@@ -54,7 +55,7 @@ jobs:
             --cpu 1 \
             --concurrency 20 \
             --max-instances 2 \
-            --timeout 15s \
-            --env-vars-file env.prod.yaml \
-            --set-secrets "DATABASE_DSN=DATABASE_DSN:latest,SMTP_PASS=SMTP_PASS:latest,JWT_SECRET=JWT_SECRET:latest" \
-            --set-cloudsql-instances ronnies-world-prod:us-east1:ronnies-world-db-prod \
+            --timeout 30s \
+            --set-env-vars "APP_ENV=prod,JWT_EXPIRATION_MINUTES=15,REFRESH_TOKEN_EXPIRATION_DAYS=10,GOOGLE_CLIENT_ID_WEB=538330222782-sk9hq06t3df1hmsmjfgjlvosuk7nr2v4.apps.googleusercontent.com,GOOGLE_CLIENT_ID_ANDROID=538330222782-sk9hq06t3df1hmsmjfgjlvosuk7nr2v4.apps.googleusercontent.com" \
+            --set-secrets "DATABASE_DSN=DATABASE_DSN:latest,JWT_SECRET=JWT_SECRET:latest" \
+            --add-cloudsql-instances $CLOUD_SQL_INSTANCE

@@ -8,8 +8,8 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY package.json package-lock.json* ./
-RUN npm install
-RUN npm install -D @tailwindcss/oxide-linux-arm64-gnu
+RUN npm install --include=optional
+RUN npm install -D @tailwindcss/oxide-linux-x64-gnu @tailwindcss/oxide-linux-arm64-gnu
 
 RUN go install github.com/a-h/templ/cmd/templ@v0.3.1020
 
