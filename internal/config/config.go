@@ -3,8 +3,6 @@ package config
 import (
 	"log"
 	"os"
-	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 
@@ -12,8 +10,8 @@ import (
 )
 
 type Config struct {
-	Env string 
-	DatabaseDSN string 
+	Env string
+	DatabaseDSN string
 	GoogleClientIDWeb string
 	GoogleClientIDAndroid string
 	JWTExpirationMinutes int
@@ -23,59 +21,56 @@ type Config struct {
 var Envs = InitializeConfig()
 
 func InitializeConfig() Config {
-	env := strings.ToLower(os.Getenv("APP_ENV"))
-	if env == "" {
-		env = "dev"
+	_ = godotenv.Load()
+
+	env := strings.ToLower(getEnv("APP_ENV", "dev"))
+	databaseDSNKey := "DATABASE_DSN"
+
+	if env == "prod" {
+		databaseDSNKey = "DATABASE_DSN_PROD"
 	}
 
-	loadDotEnv()
+	databaseDSN := mustGetEnv(databaseDSNKey)
+	googleClientIDWeb := mustGetEnv("GOOGLE_CLIENT_ID_WEB")
+	googleClientIDAndroid := mustGetEnv("GOOGLE_CLIENT_ID_ANDROID")
+	jwtExpirationMinutes := mustGetInt("JWT_EXPIRATION_MINUTES")
+	jwtRefreshExpirationDays := mustGetInt("REFRESH_TOKEN_EXPIRATION_DAYS")
 
-	databaseDSN := os.Getenv("DATABASE_DSN")
-	googleClientIDWeb := os.Getenv("GOOGLE_CLIENT_ID_WEB")
-	googleClientIDAndroid := os.Getenv("GOOGLE_CLIENT_ID_ANDROID")
-	jwtExpirationMinutes, err := strconv.Atoi(os.Getenv("JWT_EXPIRATION_MINUTES"))
-	if err != nil {
-		log.Fatal(
-			"invalid JWT_EXPIRATION_MINUTES",
-		)
-	}
-
-	jwtRefreshExpirationDays, err := strconv.Atoi(os.Getenv("REFRESH_TOKEN_EXPIRATION_DAYS"))
-	jwtRefreshExpirationMinutes := jwtRefreshExpirationDays * 24 * 60
-	if err != nil {
-		log.Fatal(
-			"invalid REFRESH_TOKEN_EXPIRATION_DAYS",
-		)
-	}
-
-	if googleClientIDWeb == "" || googleClientIDAndroid == "" {
-		log.Fatal("Google Client IDs are not set in environment variables")
-	}
-	log.Println("Database DSN loaded:", databaseDSN)
+	log.Println("config loaded for env:", env)
 
 	return Config{
-		Env: env, 
+		Env: env,
 		DatabaseDSN: databaseDSN,
 		GoogleClientIDWeb: googleClientIDWeb,
 		GoogleClientIDAndroid: googleClientIDAndroid,
 		JWTExpirationMinutes: jwtExpirationMinutes,
-		JWTRefreshExpirationMinutes: jwtRefreshExpirationMinutes,
+		JWTRefreshExpirationMinutes: jwtRefreshExpirationDays * 24 * 60,
 	}
 }
 
-func loadDotEnv() {
-	_, filename, _, _ := runtime.Caller(0)
-	dir := filepath.Dir(filename)
+func getEnv(key string, fallback string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+	return value
+}
 
-	for i := 0; i < 6; i++ {
-		path := filepath.Join(dir, ".env")
-		if _, err := os.Stat(path); err == nil {
-			godotenv.Load(path)
-			log.Println("✅ Loaded .env")
-			return
-		}
-		dir = filepath.Dir(dir)
+func mustGetEnv(key string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		log.Fatalf("%s is not set", key)
+	}
+	return value
+}
+
+func mustGetInt(key string) int {
+	value := mustGetEnv(key)
+
+	number, err := strconv.Atoi(value)
+	if err != nil {
+		log.Fatalf("%s must be a valid integer", key)
 	}
 
-	log.Println("⚠️  .env not found")
+	return number
 }

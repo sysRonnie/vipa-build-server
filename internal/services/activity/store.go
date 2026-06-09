@@ -296,7 +296,6 @@ func (s *Store) InsertActivity(ctx context.Context, email string, activity Activ
 	advisor := advisor.FromContext(ctx)
 	advisor.Log("store_insert_activity")
 
-	advisor.Log("activity_date: " + *activity.ActivityDate) // Log the activity date for debugging
 
 	_, err := s.db.ExecContext(
 		ctx,
@@ -313,6 +312,7 @@ func (s *Store) InsertActivity(ctx context.Context, email string, activity Activ
 		activity.VendorName,
 		activity.IncomeCategoryName,
 		activity.PhotoURL,
+		activity.FlagIsCompleted,
 	)
 
 	if err != nil {

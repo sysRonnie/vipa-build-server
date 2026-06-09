@@ -22,11 +22,11 @@ SELECT
 	TO_CHAR(a.activity_date, 'YYYY-MM-DD') AS activity_date,
 	
 	a.event_category_id,
-	CASE WHEN ec.event_category_child IS NULL THEN ec.event_category_parent
+	CASE WHEN (ec.event_category_child = '') OR (ec.event_category_child IS NULL) THEN ec.event_category_parent
 	ELSE CONCAT(ec.event_category_parent, ' (', ec.event_category_child, ')') END AS event_category_name,
 	
 	a.cost_category_id,
-	CASE WHEN cc.cost_category_child IS NULL THEN cc.cost_category_parent 
+	CASE WHEN (cc.cost_category_child = '') OR (cc.cost_category_child IS NULL) THEN cc.cost_category_parent 
 	ELSE CONCAT(cc.cost_category_parent, ' (', cc.cost_category_child, ')') END AS cost_category_name,
 	
 	a.vendor_id,
@@ -34,7 +34,7 @@ SELECT
 
 	a.income_category_id,
 	CASE
-		WHEN ic.income_category_child IS NULL THEN ic.income_category_parent
+		WHEN (ic.income_category_child = '') OR (ic.income_category_child IS NULL) THEN ic.income_category_parent
 		ELSE CONCAT(ic.income_category_parent, ' (', ic.income_category_child, ')')
 	END AS income_category_name,
 	
@@ -84,11 +84,11 @@ SELECT
 	TO_CHAR(a.activity_date, 'YYYY-MM-DD') AS activity_date,
 	
 	a.event_category_id,
-	CASE WHEN ec.event_category_child IS NULL THEN ec.event_category_parent
+	CASE WHEN (ec.event_category_child = '') OR (ec.event_category_child IS NULL) THEN ec.event_category_parent
 	ELSE CONCAT(ec.event_category_parent, ' (', ec.event_category_child, ')') END AS event_category_name,
 	
 	a.cost_category_id,
-	CASE WHEN cc.cost_category_child IS NULL THEN cc.cost_category_parent 
+	CASE WHEN (cc.cost_category_child = '') OR (cc.cost_category_child IS NULL) THEN cc.cost_category_parent 
 	ELSE CONCAT(cc.cost_category_parent, ' (', cc.cost_category_child, ')') END AS cost_category_name,
 	
 	a.vendor_id,
@@ -96,7 +96,7 @@ SELECT
 
 	a.income_category_id,
 	CASE
-		WHEN ic.income_category_child IS NULL THEN ic.income_category_parent
+		WHEN (ic.income_category_child = '') OR (ic.income_category_child IS NULL) THEN ic.income_category_parent
 		ELSE CONCAT(ic.income_category_parent, ' (', ic.income_category_child, ')')
 	END AS income_category_name,
 	
@@ -131,7 +131,8 @@ INSERT INTO USER_PROJECT_ACTIVITY (
 	COST_CATEGORY_ID,
 	VENDOR_ID,
 	INCOME_CATEGORY_ID,
-	PHOTO_URL
+	PHOTO_URL,
+	FLAG_IS_COMPLETED
 ) VALUES (
 	(SELECT UUID FROM USER_AUTH WHERE EMAIL = $1 LIMIT 1),
 	(SELECT ID FROM MASTER_PROJECT_LIST WHERE PROJECT_NAME = $2 AND FLAG_IS_DELETED = FALSE LIMIT 1),
@@ -143,7 +144,8 @@ INSERT INTO USER_PROJECT_ACTIVITY (
 	(SELECT ID FROM MASTER_COST_CATEGORY WHERE CONCAT(COST_CATEGORY_PARENT, ' (', COST_CATEGORY_CHILD, ')') = $7 AND FLAG_IS_DELETED = FALSE LIMIT 1),
 	(SELECT ID FROM MASTER_VENDOR_LIST WHERE VENDOR_NAME = $8 AND FLAG_IS_DELETED = FALSE LIMIT 1),
 	(SELECT ID FROM MASTER_INCOME_CATEGORY WHERE CONCAT(INCOME_CATEGORY_PARENT, ' (', INCOME_CATEGORY_CHILD, ')') = $9 AND FLAG_IS_DELETED = FALSE LIMIT 1),
-	$10
+	$10,
+	$11
 )
 `
 
@@ -161,16 +163,16 @@ SELECT
 	a.amount,
 	TO_CHAR(a.activity_date, 'YYYY-MM-DD') AS activity_date,
 	a.event_category_id,
-	CASE WHEN ec.event_category_child IS NULL THEN ec.event_category_parent
+	CASE WHEN (ec.event_category_child = '') OR (ec.event_category_child IS NULL) THEN ec.event_category_parent
 	ELSE CONCAT(ec.event_category_parent, ' (', ec.event_category_child, ')') END AS event_category_name,
 	a.cost_category_id,
-	CASE WHEN cc.cost_category_child IS NULL THEN cc.cost_category_parent 
+	CASE WHEN (cc.cost_category_child = '') OR (cc.cost_category_child IS NULL) THEN cc.cost_category_parent 
 	ELSE CONCAT(cc.cost_category_parent, ' (', cc.cost_category_child, ')') END AS cost_category_name,
 	a.vendor_id,
 	v.vendor_name AS vendor_name,
 	a.income_category_id,
 	CASE
-		WHEN ic.income_category_child IS NULL THEN ic.income_category_parent
+		WHEN (ic.income_category_child = '') OR (ic.income_category_child IS NULL) THEN ic.income_category_parent
 		ELSE CONCAT(ic.income_category_parent, ' (', ic.income_category_child, ')')
 	END AS income_category_name,
 	a.photo_url,
@@ -207,18 +209,18 @@ SELECT
 	TO_CHAR(a.activity_date, 'YYYY-MM-DD') AS activity_date,
 	
 	a.event_category_id,
-	CASE WHEN ec.event_category_child IS NULL THEN ec.event_category_parent
+	CASE WHEN (ec.event_category_child = '') OR (ec.event_category_child IS NULL) THEN ec.event_category_parent
 	ELSE CONCAT(ec.event_category_parent, ' (', ec.event_category_child, ')') END AS event_category_name,
 	
 	a.cost_category_id,
-	CASE WHEN cc.cost_category_child IS NULL THEN cc.cost_category_parent 
+	CASE WHEN (cc.cost_category_child = '') OR (cc.cost_category_child IS NULL) THEN cc.cost_category_parent 
 	ELSE CONCAT(cc.cost_category_parent, ' (', cc.cost_category_child, ')') END AS cost_category_name,
 	
 	a.vendor_id,
 	v.vendor_name AS vendor_name,
 	a.income_category_id,
 	CASE
-		WHEN ic.income_category_child IS NULL THEN ic.income_category_parent
+		WHEN (ic.income_category_child = '') OR (ic.income_category_child IS NULL) THEN ic.income_category_parent
 		ELSE CONCAT(ic.income_category_parent, ' (', ic.income_category_child, ')')
 	END AS income_category_name,
 	
@@ -291,7 +293,7 @@ SET
 	cost_category_id = (
 		SELECT ID FROM MASTER_COST_CATEGORY 
 		WHERE 
-			CASE WHEN COST_CATEGORY_CHILD IS NULL THEN COST_CATEGORY_PARENT = $7
+			CASE WHEN (COST_CATEGORY_CHILD = '') OR (COST_CATEGORY_CHILD IS NULL) THEN COST_CATEGORY_PARENT = $7
 			ELSE CONCAT(COST_CATEGORY_PARENT, ' (', COST_CATEGORY_CHILD, ')') = $7 END
 			 AND FLAG_IS_DELETED = FALSE 
 		LIMIT 1
@@ -336,7 +338,8 @@ INSERT INTO user_project_activity (
 	cost_category_id,
 	vendor_id,
 	income_category_id,
-	photo_url
+	photo_url,
+	flag_is_completed
 ) VALUES (
 	(SELECT uuid FROM user_auth WHERE email = $1 LIMIT 1),
 	(SELECT id FROM master_project_list WHERE project_name = $2 AND flag_is_deleted = false LIMIT 1),
@@ -349,7 +352,8 @@ INSERT INTO user_project_activity (
 	(SELECT id FROM master_cost_category WHERE CONCAT(cost_category_parent, ' (', cost_category_child, ')') = $9 AND flag_is_deleted = false LIMIT 1),
 	(SELECT id FROM master_vendor_list WHERE vendor_name = $10 AND flag_is_deleted = false LIMIT 1),
 	(SELECT id FROM master_income_category WHERE income_category_parent = $11 AND flag_is_deleted = false LIMIT 1),
-	$12
+	$12,
+	$13
 )
 `
 
@@ -384,7 +388,7 @@ SET
 		FROM master_cost_category
 		WHERE
 			CASE
-				WHEN cost_category_child IS NULL THEN cost_category_parent = $9
+				WHEN (cost_category_child = '') OR (cost_category_child IS NULL) THEN cost_category_parent = $9
 				ELSE CONCAT(cost_category_parent, ' (', cost_category_child, ')') = $9
 			END
 		AND flag_is_deleted = FALSE
@@ -402,7 +406,7 @@ SET
 		FROM master_income_category
 		WHERE
 			CASE
-				WHEN income_category_child IS NULL THEN income_category_parent = $11
+				WHEN (income_category_child = '') OR (income_category_child IS NULL) THEN income_category_parent = $11
 				ELSE CONCAT(income_category_parent, ' (', income_category_child, ')') = $11
 			END
 		AND flag_is_deleted = FALSE
@@ -505,7 +509,7 @@ ORDER BY COST_CATEGORY_NAME
 var baseEventListNamesQuery = `
 SELECT 
 	CASE WHEN 
-		A.EVENT_CATEGORY_CHILD IS NULL THEN A.EVENT_CATEGORY_PARENT 
+		(A.EVENT_CATEGORY_CHILD = '') OR (A.EVENT_CATEGORY_CHILD IS NULL) THEN A.EVENT_CATEGORY_PARENT 
 		ELSE A.EVENT_CATEGORY_PARENT || ' (' || A.EVENT_CATEGORY_CHILD || ')' 
 		END AS EVENT_CATEGORY_NAME
 FROM MASTER_EVENT_CATEGORY A
