@@ -24,13 +24,7 @@ func InitializeConfig() Config {
 	_ = godotenv.Load()
 
 	env := strings.ToLower(getEnv("APP_ENV", "dev"))
-	databaseDSNKey := "DATABASE_DSN"
-
-	if env == "prod" {
-		databaseDSNKey = "DATABASE_DSN_PROD"
-	}
-
-	databaseDSN := mustGetEnv(databaseDSNKey)
+	databaseDSN := mustGetEnv("DATABASE_DSN")
 	googleClientIDWeb := mustGetEnv("GOOGLE_CLIENT_ID_WEB")
 	googleClientIDAndroid := mustGetEnv("GOOGLE_CLIENT_ID_ANDROID")
 	jwtExpirationMinutes := mustGetInt("JWT_EXPIRATION_MINUTES")
