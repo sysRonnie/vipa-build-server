@@ -37,7 +37,7 @@ jobs:
       - name: Build image
         run: |
           IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$SERVICE_NAME:${{ github.sha }}
-          docker build -t $IMAGE .
+          docker build --platform linux/amd64 -t $IMAGE .
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
       - name: Push image
