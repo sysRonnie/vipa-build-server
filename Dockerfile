@@ -16,7 +16,7 @@ COPY . .
 
 RUN bash bobby.sh
 RUN templ generate
-RUN npx @tailwindcss/cli -i ./public/input.css -o ./public/styles.css
+RUN npx tailwindcss -i ./public/input.css -o ./public/styles.css
 RUN CGO_ENABLED=0 GOOS=linux go build -o /server ./cmd/main.go
 
 FROM debian:bookworm-slim
