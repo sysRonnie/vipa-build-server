@@ -1,0 +1,60 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: ronnies-world-prod
+  SERVICE_NAME: ronnies-world-server
+  REGION: us-east1
+  REPO_NAME: ronnies-world-repo
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set project
+        run: gcloud config set project $PROJECT_ID
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker $REGION-docker.pkg.dev
+
+      - name: Build & tag image
+        run: |
+          IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$SERVICE_NAME:${{ github.sha }}
+          docker build -t $IMAGE .
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      - name: Push image
+        run: docker push $IMAGE
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy $SERVICE_NAME \
+            --image $IMAGE \
+            --region $REGION \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8080 \
+            --memory 512Mi \
+            --cpu 1 \
+            --concurrency 20 \
+            --max-instances 2 \
+            --timeout 15s \
+            --env-vars-file env.prod.yaml \
+            --set-secrets "DATABASE_DSN=DATABASE_DSN:latest,SMTP_PASS=SMTP_PASS:latest,JWT_SECRET=JWT_SECRET:latest" \
+            --set-cloudsql-instances ronnies-world-prod:us-east1:ronnies-world-db-prod \
