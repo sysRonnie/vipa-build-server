@@ -21,6 +21,7 @@ func NewClientServer(db *sql.DB) *ClientHandler {
 
 func (h *ClientHandler) ClientService(e *echo.Echo) error {
 	e.GET("/", ShowLandingPage)
+	e.GET("/privacy", ShowPrivacyPolicyPage)
 	e.GET("/home", ShowHomePage)
 
 
@@ -39,6 +40,10 @@ func ShowLandingPage(c echo.Context) error {
 
 func ShowHomePage(c echo.Context) error {
 	return Render(c, page.HomePage())
+}
+
+func ShowPrivacyPolicyPage(c echo.Context) error {
+	return Render(c, page.PrivacyPolicyPage())
 }
 
 func Render(c echo.Context, component templ.Component) error {

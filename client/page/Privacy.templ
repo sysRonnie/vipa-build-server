@@ -1,0 +1,117 @@
+
+package page
+
+import (
+    "go-tailwind-test/client/layout"
+)
+
+templ PrivacyPolicyPage() {
+    @layout.Base() {
+
+        <div class="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
+            <!-- Title -->
+            <img src="/public/logo.svg" alt="VIPA Logo" class="w-32 h-32 mb-6">
+
+            <!-- Button stack (VStack equivalent) -->
+            <div class="flex flex-col gap-4 w-full max-w-sm">
+                <h1 class="text-3xl font-bold mb-6">
+
+                    VIPA Build Privacy Policy
+
+                </h1>
+
+                <p class="mb-4">
+
+                    Last Updated: June 2026
+
+                </p>
+
+                <p class="mb-6">
+
+                    VIPA Build is an internal project management application intended for private use. This application is not offered to the general
+
+                    public and is used solely for business and testing purposes.
+
+                </p>
+
+                <h2 class="text-xl font-semibold mb-2">
+
+                    Information We Collect
+
+                </h2>
+
+                <p class="mb-6">
+
+                    VIPA Build may store information entered by users, including
+
+                    project details, customer information, notes, expenses, income
+
+                    records, and related business data.
+
+                </p>
+
+                <h2 class="text-xl font-semibold mb-2">
+
+                    How Information Is Used
+
+                </h2>
+
+                <p class="mb-6">
+
+                    Information is used solely to operate, maintain, and improve
+
+                    VIPA Build and to support business operations.
+
+                </p>
+
+                <h2 class="text-xl font-semibold mb-2">
+
+                    Data Sharing
+
+                </h2>
+
+                <p class="mb-6">
+
+                    We do not sell, rent, or share user information with third
+
+                    parties except when required by law or necessary to operate
+
+                    the service.
+
+                </p>
+
+                <h2 class="text-xl font-semibold mb-2">
+
+                    Data Security
+
+                </h2>
+
+                <p class="mb-6">
+
+                    Reasonable efforts are made to protect stored information.
+
+                    However, no method of electronic storage or transmission is
+
+                    guaranteed to be completely secure.
+
+                </p>
+
+                <h2 class="text-xl font-semibold mb-2">
+
+                    Contact
+
+                </h2>
+
+                <p>
+
+                    If you have questions regarding this Privacy Policy, please
+
+                    contact Sandbox Computing.
+
+                </p>
+
+            </div>
+
+        </div>
+    }
+}
